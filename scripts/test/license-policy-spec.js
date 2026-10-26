@@ -1,5 +1,5 @@
-const should = require('should');
-const { evaluate, loadPolicy } = require('../license-policy.js');
+import should from 'should';
+import { evaluate, loadPolicy } from '../license-policy.js';
 
 const policy = loadPolicy({
   allowed: ['MIT', 'Apache-2.0', 'Public Domain'],

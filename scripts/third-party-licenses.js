@@ -1,22 +1,21 @@
-const path = require('path');
-const fs = require('fs');
-const licenseChecker = require('license-checker');
-const { uniq } = require('omnibelt');
-const { evaluate, loadPolicy } = require('./license-policy.js');
+import path from 'node:path';
+import fs from 'node:fs';
+import licenseChecker from 'license-checker';
+import { uniq } from 'omnibelt';
+import { evaluate, loadPolicy } from './license-policy.js';
 
 // Usage: node third-party-licenses.js [dir] [--check]
 // --check only enforces the license policy; it doesn't write LICENSES-3rdParty.csv.
 const args = process.argv.slice(2);
 const checkOnly = args.includes('--check');
 const dirArg = args.find((arg) => !arg.startsWith('--'));
-const dir = dirArg ? path.resolve(dirArg) : path.resolve(__dirname, '..');
+const dir = dirArg ? path.resolve(dirArg) : path.resolve(import.meta.dirname, '..');
 
 const ignoreLosant = /^losant-/;
 const policy = loadPolicy();
 
 const lines = [
   'tini, MIT, https://github.com/krallin/tini',
-  'yarn, BSD-2-Clause, https://github.com/yarnpkg/yarn',
   'node, MIT, https://github.com/nodejs/node',
   'pnpm, MIT, https://github.com/pnpm/pnpm'
 ];
