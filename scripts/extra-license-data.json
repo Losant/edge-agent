@@ -1,4 +1,0 @@
-{
-  "precond": { "licenses": ["MIT"] },
-  "browser-request": { "licenses": ["Apache 2.0"] }
-}
