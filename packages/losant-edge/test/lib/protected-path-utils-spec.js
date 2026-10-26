@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'fs-extra';
 import { should } from '../common.js';
-import { PROJECT_ROOT_DIR } from '../../src/constants.js';
+import { PACKAGE_ROOT_DIR } from '../../src/constants.js';
 import { ONE_MEGABYTE } from 'losant-nodejs-utils/src/constants/size.js';
 import { guardPath, guardFileReadPath, loadGuardedFile, isProtectedPath } from '../../src/lib/protected-path-utils.js';
 
@@ -12,14 +12,14 @@ describe('protected-path-utils', () => {
 
   describe('`isProtectedPath`', function() {
     it('Recognizes project paths', function() {
-      isProtectedPath(PROJECT_ROOT_DIR).should.equal(true);
+      isProtectedPath(PACKAGE_ROOT_DIR).should.equal(true);
       isProtectedPath('./').should.equal(true);
     });
 
     it('Recognizes non project paths', function() {
-      isProtectedPath(`${PROJECT_ROOT_DIR}/..`).should.equal(false);
+      isProtectedPath(`${PACKAGE_ROOT_DIR}/..`).should.equal(false);
       isProtectedPath('/var/lib').should.equal(false);
-      isProtectedPath(`${PROJECT_ROOT_DIR}-sibling`).should.equal(false);
+      isProtectedPath(`${PACKAGE_ROOT_DIR}-sibling`).should.equal(false);
     });
   });
 
@@ -27,8 +27,8 @@ describe('protected-path-utils', () => {
     const filePath = path.resolve(os.tmpdir(), 'protected-path-utils-spec-file.txt');
     const symlinkPath = path.resolve(os.tmpdir(), 'protected-path-utils-spec-link.txt');
     const danglingLinkPath = path.resolve(os.tmpdir(), 'protected-path-utils-spec-dangling.txt');
-    // A real file inside PROJECT_ROOT_DIR, so realpath has something to resolve to.
-    const protectedTarget = path.resolve(PROJECT_ROOT_DIR, 'package.json');
+    // A real file inside PACKAGE_ROOT_DIR, so realpath has something to resolve to.
+    const protectedTarget = path.resolve(PACKAGE_ROOT_DIR, 'package.json');
 
     before(async () => {
       await fs.writeFile(filePath, 'hello');
@@ -65,14 +65,14 @@ describe('protected-path-utils', () => {
     });
 
     it('refuses a path directly inside the protected agent directory', async () => {
-      await guardPath(path.resolve(PROJECT_ROOT_DIR, 'losant-edge-agent-config.toml'))
+      await guardPath(path.resolve(PACKAGE_ROOT_DIR, 'losant-edge-agent-config.toml'))
         .should.be.rejectedWith(/protected Losant Edge Agent directory/);
     });
 
     it('refuses a traversal that resolves back into the agent directory', async () => {
       // Starts at tmpdir and walks back in via '..', so the raw string does not
-      // begin with PROJECT_ROOT_DIR - only resolving it first catches this.
-      const target = path.resolve(PROJECT_ROOT_DIR, 'losant-edge-agent-config.toml');
+      // begin with PACKAGE_ROOT_DIR - only resolving it first catches this.
+      const target = path.resolve(PACKAGE_ROOT_DIR, 'losant-edge-agent-config.toml');
       // Concatenated, not path.join'd - join would normalize the '..' away.
       const traversal = `${os.tmpdir()}${path.sep}${path.relative(os.tmpdir(), target)}`;
       traversal.should.containEql('..');
@@ -87,7 +87,7 @@ describe('protected-path-utils', () => {
 
     it('refuses a nonexistent write target whose parent directory is a symlink into the protected agent directory', async () => {
       const parentLink = path.resolve(os.tmpdir(), 'protected-path-utils-spec-dir-link');
-      await fs.ensureSymlink(PROJECT_ROOT_DIR, parentLink, 'dir');
+      await fs.ensureSymlink(PACKAGE_ROOT_DIR, parentLink, 'dir');
       try {
         await guardPath(path.resolve(parentLink, 'new-file.txt'), { checkAncestors: true })
           .should.be.rejectedWith(/protected Losant Edge Agent directory/);
@@ -150,7 +150,7 @@ describe('protected-path-utils', () => {
   describe('guardFileReadPath', () => {
     const filePath = path.resolve(os.tmpdir(), 'protected-path-utils-spec-read-file.txt');
     const symlinkPath = path.resolve(os.tmpdir(), 'protected-path-utils-spec-read-link.txt');
-    const protectedTarget = path.resolve(PROJECT_ROOT_DIR, 'package.json');
+    const protectedTarget = path.resolve(PACKAGE_ROOT_DIR, 'package.json');
 
     before(async () => {
       await fs.writeFile(filePath, 'read me');
@@ -224,7 +224,7 @@ describe('protected-path-utils', () => {
     });
 
     it('rejects a path inside the protected agent directory', async () => {
-      await guardFileReadPath(path.resolve(PROJECT_ROOT_DIR, 'losant-edge-agent-config.toml'))
+      await guardFileReadPath(path.resolve(PACKAGE_ROOT_DIR, 'losant-edge-agent-config.toml'))
         .should.be.rejectedWith(/protected Losant Edge Agent directory/);
     });
 
@@ -277,7 +277,7 @@ describe('protected-path-utils', () => {
     });
 
     it('rejects a path inside the protected agent directory', async () => {
-      await loadGuardedFile(path.resolve(PROJECT_ROOT_DIR, 'losant-edge-agent-config.toml'))
+      await loadGuardedFile(path.resolve(PACKAGE_ROOT_DIR, 'losant-edge-agent-config.toml'))
         .should.be.rejectedWith(/protected Losant Edge Agent directory/);
     });
 

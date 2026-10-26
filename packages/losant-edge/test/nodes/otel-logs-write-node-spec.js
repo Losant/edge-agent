@@ -573,7 +573,7 @@ describe('OtelLogsWriteNode', () => {
     });
 
     it('reads a certificate from disk in diskPath mode', async () => {
-      // Outside PROJECT_ROOT_DIR — resolveCert refuses paths inside the agent directory.
+      // Outside PACKAGE_ROOT_DIR — resolveCert refuses paths inside the agent directory.
       const certPath = path.resolve(os.tmpdir(), 'otel-logs-spec-client.crt');
       await fs.writeFile(certPath, '-----BEGIN CERTIFICATE-----\nx\n-----END CERTIFICATE-----');
       try {

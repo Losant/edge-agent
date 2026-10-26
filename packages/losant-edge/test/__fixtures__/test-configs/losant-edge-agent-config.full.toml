@@ -1,5 +1,5 @@
 [logger]
-out = './packages/losant-edge/test/testing-workspace/full/losant-edge-agent-log.log'
+out = './test/testing-workspace/full/losant-edge-agent-log.log'
 level = 'info'
 
 [gateway]
@@ -16,7 +16,7 @@ queueOfflineMessages = true
 # certificatePath = ''
 
 [store]
-path = './packages/losant-edge/test/testing-workspace/full/losant-edge-agent-store.db'
+path = './test/testing-workspace/full/losant-edge-agent-store.db'
 
 [udp]
 # address = '0.0.0.0'
