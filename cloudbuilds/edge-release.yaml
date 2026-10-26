@@ -1,0 +1,67 @@
+options:
+  machineType: N1_HIGHCPU_8
+  env:
+  - 'DOCKER_API_VERSION=1.41'
+  - 'BUILDX_NO_DEFAULT_ATTESTATIONS=1'
+timeout: 3600s
+
+steps:
+- id: copyToDockerHub
+  name: 'us-docker.pkg.dev/losant-core/losant/cloud-build-tools:latest'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    set -euo pipefail
+    IFS=$'\n\t'
+    gcloud secrets versions access latest --secret=DOCKERHUB_TOKEN --project=$PROJECT_ID \
+      | docker login --username=losant --password-stdin
+
+    docker buildx create --driver docker-container --name my-builder --use
+    pull_from="us-docker.pkg.dev/$PROJECT_ID/losant/losant-edge"
+    push_to=$_REPO
+    version=$(cat ./packages/losant-edge/package.json | jq -r '.version')
+    major="${version%%.*}"
+    minor="${version%.*}"
+    maintags=("$major" "$minor" "latest")
+
+    # --- non-alpine multi-platform (amd64 + arm64) ---
+    docker buildx imagetools create --tag $push_to:$version $pull_from:$version
+    for tag in "${maintags[@]}"; do
+      docker buildx imagetools create --tag $push_to:$tag $push_to:$version
+    done
+
+    # --- alpine multi-platform (amd64 + arm64) ---
+    docker buildx imagetools create --tag $push_to:$version-alpine $pull_from:$version-alpine
+    for tag in "${maintags[@]}"; do
+      docker buildx imagetools create --tag $push_to:$tag-alpine $push_to:$version-alpine
+    done
+
+    # --- non-alpine amd64-only ---
+    docker buildx imagetools create --platform=linux/amd64 \
+      --tag $push_to:$version-amd64 $pull_from:$version
+    for tag in "${maintags[@]}"; do
+      docker buildx imagetools create --tag $push_to:$tag-amd64 $push_to:$version-amd64
+    done
+
+    # --- non-alpine arm64-only ---
+    docker buildx imagetools create --platform=linux/arm64 \
+      --tag $push_to:$version-arm64 $pull_from:$version
+    for tag in "${maintags[@]}"; do
+      docker buildx imagetools create --tag $push_to:$tag-arm64 $push_to:$version-arm64
+    done
+
+    # --- alpine amd64-only ---
+    docker buildx imagetools create --platform=linux/amd64 \
+      --tag $push_to:$version-alpine-amd64 $pull_from:$version-alpine
+    for tag in "${maintags[@]}"; do
+      docker buildx imagetools create --tag $push_to:$tag-alpine-amd64 $push_to:$version-alpine-amd64
+    done
+
+    # --- alpine arm64-only ---
+    docker buildx imagetools create --platform=linux/arm64 \
+      --tag $push_to:$version-alpine-arm64 $pull_from:$version-alpine
+    for tag in "${maintags[@]}"; do
+      docker buildx imagetools create --tag $push_to:$tag-alpine-arm64 $push_to:$version-alpine-arm64
+    done
+  waitFor: ['-']

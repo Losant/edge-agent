@@ -1,0 +1,45 @@
+[logger]
+out = './packages/losant-edge/test/testing-workspace/full/losant-edge-agent-log.log'
+level = 'error'
+
+[gateway]
+host = '127.0.0.1'
+protocol = 'mqtt'
+id = '4b51351a811e1299935ae36d'
+key = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+secret = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+[store]
+path = './packages/losant-edge/test/testing-workspace/full/losant-edge-agent-store.db'
+
+[webserver]
+port = 45457
+address = '127.0.0.1'
+enabled = true
+
+[localBroker]
+port = 45458
+enabled = true
+
+[[triggers]]
+name = 'opcuaTrig1'
+type = 'opcua'
+uri = 'opc.tcp://localhost:4335/UA/Server'
+samplingInterval = '10'
+eventFilter = ['Message', 'Value']
+
+[[triggers.monitoredItems]]
+nameSpace = '1'
+identifier = 's=MyVar3'
+
+[[triggers]]
+name = 'opcuaTrig1'
+type = 'opcua'
+uri = 'opc.tcp://localhost:4335/UA/Server'
+eventFilter = []
+
+[[triggers.monitoredItems]]
+identifier = 'i=2254'
+
+[[triggers.monitoredItems]]
+identifier = 'i=2255'

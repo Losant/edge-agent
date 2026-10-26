@@ -1,0 +1,10 @@
+[gateway]
+host = 'localhost'
+protocol = 'mqtts'
+id = '123412341234123412341234'
+key = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+secret = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+[localBroker]
+port = 45458
+enabled = true

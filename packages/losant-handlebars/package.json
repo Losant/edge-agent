@@ -1,0 +1,39 @@
+{
+  "name": "losant-handlebars",
+  "version": "2.7.0",
+  "license": "Apache-2.0",
+  "description": "The Losant path and templating engine, based on Handlebars",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Losant/edge-agent.git",
+    "directory": "packages/losant-handlebars"
+  },
+  "main": "src/index.js",
+  "type": "module",
+  "engines": {
+    "node": "24.22.1"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json",
+    "./src/*.js": "./src/*.js",
+    "./src/*": "./src/*.js"
+  },
+  "dependencies": {
+    "@alloc/quick-lru": "^5.3.0",
+    "d3-format": "^3.1.2",
+    "error": "^7.2.1",
+    "geolib": "^3.3.14",
+    "handlebars": "^4.7.10",
+    "inflection": "^3.0.2",
+    "js-base64": "^3.9.4",
+    "moment": "^2.31.0",
+    "moment-timezone": "^0.6.5",
+    "nmea-0183": "github:nherment/node-nmea#07d805d",
+    "omnibelt": "^4.1.0",
+    "qs": "^6.16.1",
+    "re2": "^1.27.0",
+    "updeep": "^1.2.4",
+    "xml-js": "^1.6.11"
+  }
+}

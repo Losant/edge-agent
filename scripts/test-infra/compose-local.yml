@@ -1,0 +1,28 @@
+# Local test services, published on localhost. Start with `pnpm test:env:up`
+# (which reuses any service already answering on its port and starts the
+# rest), stop with `pnpm test:env:down`. The specs expect these exact ports.
+name: edge-agent-test
+
+services:
+  redis:
+    extends: { file: ./compose-services.yml, service: redis }
+    ports:
+      - '6379:6379'
+
+  redis-cluster:
+    extends: { file: ./compose-services.yml, service: redis-cluster }
+    environment:
+      - REDIS_CLUSTER_ANNOUNCE_HOSTNAME=localhost
+    ports:
+      - '7379:7379'
+
+  mongodb:
+    extends: { file: ./compose-services.yml, service: mongodb }
+    ports:
+      - '27017:27017'
+
+  mosquitto:
+    extends: { file: ./compose-services.yml, service: mosquitto }
+    ports:
+      - '1882:1882'
+      - '1888:1888'

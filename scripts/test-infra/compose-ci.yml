@@ -1,0 +1,8 @@
+# Runner for the GitHub Actions matrix: any package's tests in the shared runner image.
+# The workflow starts the services first (`up -d --wait`), then runs this with
+# `--no-deps`.
+include:
+  - ./compose-services.yml
+services:
+  losant-test:
+    extends: { file: ./compose-test-base.yml, service: losant-test-base }

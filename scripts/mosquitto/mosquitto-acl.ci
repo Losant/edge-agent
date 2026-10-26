@@ -1,0 +1,4 @@
+topic readwrite incoming/#
+topic readwrite outgoing/#
+topic readwrite foo/#
+topic deny foo/bar/#
