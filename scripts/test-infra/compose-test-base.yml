@@ -1,0 +1,28 @@
+# Base test-runner service. scripts/test-infra/compose-ci.yml extends
+# `losant-test-base`.
+services:
+  losant-test-base:
+    image: basic-test-image
+    build:
+      context: ../../
+      dockerfile: ./${CI_DOCKERFILE:-ci.Dockerfile}
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - DEBUG=
+      - REDIS_HOST_CI=redis
+      - REDIS_HOST_CLUSTER=redis-cluster
+      - MONGO_HOST_CI=mongodb
+      - MOSQUITTO_HOST=mosquitto
+    volumes:
+      - ../../:/var/apps/losant
+    depends_on:
+      redis:
+        condition: service_healthy
+      redis-cluster:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
+    working_dir: /var/apps/losant

@@ -1,0 +1,35 @@
+{
+  "versionId": "5a6b569172a4998fc022ad5e",
+  "version": "flowVersion",
+  "name": "flowName",
+  "globals": { },
+  "triggers": [
+    { "type": "virtualButton", "key": "90210", "outputIds": [["node-1"]] },
+    { "type": "timer", "key": "1235", "config": { "seconds": 10 }, "outputIds": [["node-3"]]  }
+  ],
+  "nodes": [
+    {
+      "id": "node-1",
+      "outputIds": [["node-2"]],
+      "type": "GetPeripheralNode",
+      "config": {
+        "findMethod": "name",
+        "name": "TestDevice",
+        "findMultiple": true,
+        "sortField": "id",
+        "resultPath": "result"
+      }
+    },
+    {
+      "id": "node-2",
+      "type": "MqttMessageNode",
+      "config": {
+        "topicTemplate": "testButton/5a6b563972a4998fc022ad5b",
+        "messageTemplate": "{{jsonEncode result}}"
+      }
+    },
+    { "id": "node-3", "type": "DebugNode", "config": { } }
+  ],
+  "minimumAgentVersion": "0.0.0",
+  "onDiskFormatVersion": "1.0"
+}

@@ -1,0 +1,30 @@
+options:
+  machineType: N1_HIGHCPU_8
+  env:
+  - 'DOCKER_API_VERSION=1.41'
+  - 'BUILDX_NO_DEFAULT_ATTESTATIONS=1'
+timeout: 7200s
+
+steps:
+- id: edgeBuild
+  name: 'us-docker.pkg.dev/losant-core/losant/cloud-build-tools:latest'
+  entrypoint: bash
+  args:
+  - '-c'
+  - |
+    set -euo pipefail
+    IFS=$'\n\t'
+
+    export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
+    docker buildx create --driver docker-container --name my-builder --use
+
+    if [[ -n '$TAG_NAME' ]]; then
+      version=$(cat ./packages/losant-edge/package.json | jq -r '.version')
+      TAG=$version ROLLBAR_KEY=$_ROLLBAR_KEY docker buildx bake --push edge edge-alpine edge-sle
+      gcloud builds triggers run gea-edge-release --tag $TAG_NAME --substitutions=_REPO=$_PROD_RELEASE_EDGE_REPO --project $PROJECT_ID
+    else
+      TAG=$BRANCH_NAME ROLLBAR_KEY=$_ROLLBAR_KEY docker buildx bake \
+        --set "*.output=type=image,push=true,rewrite-timestamp=true" \
+        edge edge-alpine edge-sle
+    fi
+  waitFor: ['-']

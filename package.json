@@ -1,0 +1,80 @@
+{
+  "name": "edge-agent",
+  "author": "Losant IoT",
+  "license": "Apache-2.0",
+  "version": "2.7.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": "24.22.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Losant/edge-agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Losant/edge-agent/issues"
+  },
+  "scripts": {
+    "mocha": "node --no-network-family-autoselection --openssl-legacy-provider --dns-result-order=ipv4first --expose-gc node_modules/mocha/bin/mocha.js",
+    "install:scripts": "cd scripts && pnpm install",
+    "reinstall:scripts": "rm -rf scripts/node_modules && pnpm install:scripts",
+    "lint": "eslint .",
+    "lint:fix": "pnpm lint --fix",
+    "lint:staged": "lint-staged",
+    "scripts:lint": "eslint scripts",
+    "scripts:lint:fix": "pnpm scripts:lint --fix",
+    "test:env:up": "node scripts/test-infra/up.mjs",
+    "test:env:down": "docker compose -f scripts/test-infra/compose-local.yml down",
+    "test": "pnpm handlebars:test && pnpm nodejs-utils:test && pnpm sandcastle:test && pnpm nodes:test && pnpm edge:test",
+    "verify": "pnpm lint && pnpm test",
+    "edge:add": "pnpm add --filter losant-edge",
+    "edge:lint": "eslint packages/losant-edge",
+    "edge:lint:fix": "pnpm edge:lint --fix",
+    "edge:test": "sh ./packages/losant-edge/scripts/run-test.sh",
+    "edge:start": "./packages/losant-edge/losant-edge-agent",
+    "handlebars:add": "pnpm add --filter losant-handlebars",
+    "handlebars:lint": "eslint packages/losant-handlebars",
+    "handlebars:lint:fix": "pnpm handlebars:lint --fix",
+    "handlebars:test": "NODE_ENV=test TZ=UTC pnpm mocha --require packages/losant-handlebars/test/common.js packages/losant-handlebars/test",
+    "nodes:add": "pnpm add --filter losant-nodes",
+    "nodes:lint": "eslint packages/losant-nodes",
+    "nodes:lint:fix": "pnpm nodes:lint --fix",
+    "nodes:test": "packages/losant-nodes/test/run.sh",
+    "nodejs-utils:add": "pnpm add --filter losant-nodejs-utils",
+    "nodejs-utils:lint": "eslint packages/losant-nodejs-utils",
+    "nodejs-utils:lint:fix": "pnpm nodejs-utils:lint --fix",
+    "nodejs-utils:test": "NODE_ENV=test TZ=UTC pnpm mocha packages/losant-nodejs-utils/test",
+    "sandcastle:add": "pnpm add --filter losant-sandcastle",
+    "sandcastle:lint": "eslint packages/losant-sandcastle",
+    "sandcastle:lint:fix": "pnpm sandcastle:lint --fix",
+    "sandcastle:test": "NODE_ENV=test TZ=UTC pnpm mocha --timeout 15000 packages/losant-sandcastle/test"
+  },
+  "mocha": {
+    "reporter": "spec",
+    "recursive": true,
+    "require": "should",
+    "check-leaks": true,
+    "globals": [
+      "match",
+      "bigEndian",
+      "format",
+      "o"
+    ]
+  },
+  "devDependencies": {
+    "@losant/eslint-config-losant": "2.1.0",
+    "eslint": "9.39.4",
+    "husky": "9.1.7",
+    "lint-staged": "^16.4.0",
+    "mocha": "^11.8.0",
+    "nock": "^14.0.17",
+    "should": "13.2.3",
+    "sinon": "^21.1.2",
+    "timekeeper": "^2.3.1"
+  },
+  "lint-staged": {
+    "*.{js,jsx,cjs}": "eslint --max-warnings=0 --no-warn-ignored"
+  }
+}

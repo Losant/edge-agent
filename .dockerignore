@@ -1,0 +1,34 @@
+# Monorepo files
+*.md
+.DS_Store
+.dockerignore
+.gitignore
+.git
+.node-version
+node_modules
+npm-debug.log
+test
+yarn-error.log
+README.md
+.private
+
+# Packages common rules
+packages/*/*.example
+packages/*/*.md
+packages/*/*.log
+packages/*/*Dockerfile*
+packages/*/coverage
+packages/*/data
+packages/*/docker-compose*.yml
+packages/*/hooks
+packages/*/node_modules
+packages/*/test
+packages/*/benchmark
+packages/*/.env
+
+# Specific package rules
+packages/losant-edge/*.toml
+packages/losant-edge/losant-edge-agent-store.db
+!packages/losant-edge/losant-edge-agent-config.example.toml
+!packages/losant-edge/README.md
+!packages/losant-edge/README-Docker.md

@@ -1,0 +1,45 @@
+packages:
+  - packages/*
+
+fetchTimeout: 300000
+
+minimumReleaseAge: 1440
+
+minimumReleaseAgeExclude:
+  - omnibelt
+
+blockExoticSubdeps: false
+verifyDepsBeforeRun: false
+
+overrides:
+  'diff@^5.0.2': ^8.0.3 # https://github.com/advisories/GHSA-73rr-hh4g-fpgx
+  'modbus-serial>serialport': ^13.0.0 # keep installed serialport version matching modbus-serial's installed version
+  'mocha>serialize-javascript': ^7.0.2 # fixes GHSA-5c6j-r48x-rmvq
+  'node-opcua-address-space>lodash': ^4.18.1 # fixes CVE-2026-2950 and CVE-2026-4800
+  'node-opcua-server>lodash': ^4.18.1 # fixes CVE-2026-2950 and CVE-2026-4800
+  'node-opcua-aggregates>lodash': ^4.18.1 # fixes CVE-2026-2950 and CVE-2026-4800
+  'gaxios@6.7.1>node-fetch': 3.3.2 # https://github.com/nodejs/node/issues/63989
+  'ftp-srv>uuid': ^13.0.2
+  'uuid@8.x.x': ^13.0.2 # nightwatch, sockjs
+  'uuid@9.x.x': ^13.0.2 # safe to override to v13, same ESM API (gaxios, restify, teeny-request)
+  '@aws-sdk/xml-builder>fast-xml-parser': ^5.3.8 # fixes CVE-2026-27942
+  '@tensorflow/tfjs-node>adm-zip': ~0.6.1 # CVE-2026-39244, CVE-2026-77301 and CVE-2026-76845
+  '@tensorflow/tfjs-node>tar': ^7.5.19 # CVE-2026-59873
+  '@mapbox/node-pre-gyp>tar': ^7.5.19 # CVE-2026-59873
+  '@jsforce/jsforce-node>csv-parse': ^7.0.2 # ensure csv-parse v7 for jsforce-node - CJS require() works: v7.0.2 ships both ESM and CJS builds with proper require/import conditions in its exports map, The API jsforce uses is unchanged
+
+allowBuilds:
+  '@serialport/bindings-cpp': true
+  '@tensorflow/tfjs-node': true
+  cbor-extract: true
+  classic-level: true
+  core-js: true
+  cpu-features: true
+  dtrace-provider: true
+  node-snap7: true
+  protobufjs: true
+  re2: true
+  ssh2: true
+
+patchedDependencies:
+  csv-parse@7.0.3: patches/csv-parse@7.0.3.patch
