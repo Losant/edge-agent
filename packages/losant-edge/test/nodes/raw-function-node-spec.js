@@ -513,7 +513,7 @@ return threeFour();`
       script: `
       const fs = require('fs');
       const results = await new Promise((resolve, reject) => {
-        fs.readFile('./packages/losant-nodes/test/__fixtures__/simple-text-file.txt', (err, result) => {
+        fs.readFile('./test/__fixtures__/simple-text-file.txt', (err, result) => {
           if(err){ return reject(err); }
           resolve(result);
         });
