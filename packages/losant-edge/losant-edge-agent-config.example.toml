@@ -1,0 +1,350 @@
+# Losant Edge Agent Configuration File
+#
+# Configuration file location can be configured when running
+# the agent by either the command line flag --conf-path or the
+# environment variable CONF_PATH
+#
+# Any configuration variables that are commented out
+# below have defaults or are not required. Many can also be provided
+# through command line flags or environment variables.
+
+[logger]
+# Desired logger output destination
+# Valid options are 'console' or a file path
+# CLI: --logger-out
+# Environment Variable: LOGGER_OUT
+#
+# out = 'console'
+
+# Desired level of logging
+# Valid options are 'error', 'warn', 'info', 'verbose'
+# CLI: --logger-level
+# Environment Variable: LOGGER_LEVEL
+#
+# level = 'info'
+
+[gateway]
+# Losant Device ID of Agent
+# CLI: --device-id
+# Environment Variable: DEVICE_ID
+# id = ''
+
+# Losant Access Key for Agent
+# CLI: --access-key
+# Environment Variable: ACCESS_KEY
+# key = ''
+
+# Losant Access Secret for Agent
+# CLI: --access-secret
+# Environment Variable: ACCESS_SECRET
+# secret = ''
+
+# If the agent, when it is not connected to Losant, should queue up MQTT messages to
+# then send later when the agent does successfully connect
+# CLI: --queue-offline-messages
+# Environment Variable: QUEUE_OFFLINE_MESSAGES
+#
+# queueOfflineMessages = true
+
+# When the agent reconnects to Losant and queueOfflineMessages is true, the order in
+# which any queued offline messages should be sent
+# Valid options are 'oldestFirst', and 'newestFirst'
+# CLI: --offline-message-replay-order
+# Environment Variable: OFFLINE_MESSAGE_REPLAY_ORDER
+#
+# offlineMessageReplayOrder = 'oldestFirst'
+
+# If the agent, when it is not connected to Losant, should subscribe to
+# peripheral device information, for use by the Get: Peripheral Node
+# Valid options are true, false, 'floating', and 'peripheral'
+# CLI: --subscribe-to-peripheral-updates
+# Environment Variable: SUBSCRIBE_TO_PERIPHERAL_UPDATES
+#
+# subscribeToPeripheralUpdates = true
+
+# Address of the Losant broker
+# Environment Variable: BROKER_HOST
+#
+# host = 'broker.losant.com'
+
+# Protocol to use to connect to broker
+# Valid options are 'mqtts', 'mqtt', 'wss', and 'ws'
+# Environment Variable: BROKER_PROTOCOL
+#
+# protocol = 'mqtts'
+
+[gateway.clientSsl]
+# If an SSL key is provided, an SSL certificate is also required, and vice versa.
+# If provided, the key and secret fields above are not required.
+
+# Path to the SSL key file to use for client certificate based authentication
+# Environment Variable: BROKER_CLIENT_SSL_KEY_PATH (path to the key file)
+# Environment Variable: BROKER_CLIENT_SSL_KEY (the key itself)
+#
+# keyPath = ''
+
+# Path to the SSL certificate file to use for client certificate based authentication
+# Environment Variable: BROKER_CLIENT_SSL_CERT_PATH (path to the certificate file)
+# Environment Variable: BROKER_CLIENT_SSL_CERT (the certificate itself)
+#
+# certificatePath = ''
+
+[store]
+# Path to Agent Persistent Store
+# CLI: --store-path
+# Environment Variable: STORE_PATH
+#
+# path = './losant-edge-agent-store.db'
+
+[udp]
+# Address for UDP server
+# CLI: --udp-address
+# Environment Variable: UDP_ADDRESS
+#
+# address = '0.0.0.0'
+
+[webserver]
+# If webserver should be enabled
+# CLI: --webserver-enabled
+# Environment Variable: WEBSERVER_ENABLED
+#
+# enabled = true
+
+# Port to run webserver on
+# CLI: --webserver-port
+# Environment Variable: WEBSERVER_PORT
+#
+# port = 8080
+
+# Address to run webserver on
+# CLI: --webserver-address
+# Environment Variable: WEBSERVER_ADDRESS
+#
+# address = '0.0.0.0'
+
+# Basic auth username for webserver
+# CLI: --webserver-username
+# Environment Variable: WEBSERVER_USERNAME
+#
+# username = ''
+
+# Basic auth password for webserver
+# CLI: --webserver-password
+# Environment Variable: WEBSERVER_PASSWORD
+#
+# password = ''
+
+[webserver.ssl]
+# If an SSL key is provided, an SSL certificate is
+# also required, and vice versa. An SSL bundle is optional.
+
+# Path to the SSL key file to use for the webserver
+# CLI: --webserver-ssl-key-path
+# Environment Variable: WEBSERVER_SSL_KEY_PATH (path to the key file)
+# Environment Variable: WEBSERVER_SSL_KEY (the key itself)
+#
+# keyPath = ''
+
+# Path to the SSL certificate file to use for the webserver
+# CLI: --webserver-ssl-cert-path
+# Environment Variable: WEBSERVER_SSL_CERT_PATH (path to the certificate file)
+# Environment Variable: WEBSERVER_SSL_CERT (the certificate itself)
+#
+# certificatePath = ''
+
+# Path to the SSL Bundle file to use for the webserver
+# CLI: --webserver-ssl-bundle-path
+# Environment Variable: WEBSERVER_SSL_BUNDLE_PATH (path to the bundle file)
+# Environment Variable: WEBSERVER_SSL_BUNDLE (the bundle itself)
+#
+# bundlePath = ''
+
+[workflow]
+# The directory containing on-disk workflows
+# CLI: --workflow-directory
+# Environment Variable: WORKFLOW_DIRECTORY
+#
+# directory = ''
+
+[localBroker]
+# If the local broker should be enabled
+# CLI: --local-broker-enabled
+# Environment Variable: LOCAL_BROKER_ENABLED
+#
+# enabled = false
+
+# Port to run the local broker on
+# CLI: --local-broker-port
+# Environment Variable: LOCAL_BROKER_PORT
+#
+# port = 1883
+
+# Address to run the local broker on
+# CLI: --local-broker-address
+# Environment Variable: LOCAL_BROKER_ADDRESS
+#
+# address = '0.0.0.0'
+
+# Username for the local broker
+# CLI: --local-broker-username
+# Environment Variable: LOCAL_BROKER_USERNAME
+#
+# username = ''
+
+# Password for the local broker
+# CLI: --local-broker-password
+# Environment Variable: LOCAL_BROKER_PASSWORD
+#
+# password = ''
+
+[localBroker.ssl]
+# If an SSL key is provided, an SSL certificate is
+# also required, and vice versa. An SSL bundle is optional.
+
+# Path to the SSL key file to use for the local broker
+# CLI: --local-broker-ssl-key-path
+# Environment Variable: LOCAL_BROKER_SSL_KEY_PATH (path to the key file)
+# Environment Variable: LOCAL_BROKER_SSL_KEY (the key itself)
+#
+# keyPath = ''
+
+# Path to the SSL certificate file to use for the local broker
+# CLI: --local-broker-ssl-cert-path
+# Environment Variable: LOCAL_BROKER_SSL_CERT_PATH (path to the certificate file)
+# Environment Variable: LOCAL_BROKER_SSL_CERT (the certificate itself)
+#
+# certificatePath = ''
+
+# Path to the SSL Bundle file to use for the local broker
+# CLI: --local-broker-ssl-bundle-path
+# Environment Variable: LOCAL_BROKER_SSL_BUNDLE_PATH (path to the bundle file)
+# Environment Variable: LOCAL_BROKER_SSL_BUNDLE (the bundle itself)
+#
+# bundlePath = ''
+
+# [[triggers]]
+# Array of trigger configs which can configure an Edge Workflow trigger
+# Minimally, these require a type and a unique name.
+#
+# Example OPCUA Trigger Configuration:
+#
+# [[triggers]]
+# name = 'opcuaTrig1'
+# type = 'opcua'
+# uri = 'opc.tcp://localhost:4335/UA/Server'
+# samplingInterval = '10'
+# eventFilter = ['Message', 'Value']
+#
+# [[triggers.monitoredItems]]
+# nameSpace = '1'
+# identifier = 's=MyVar3'
+#
+# [[triggers.monitoredItems]]
+# identifier = 'i=2255'
+#
+# Example MQTT Client (External Broker) Trigger Configuration:
+#
+# [[triggers]]
+# name = 'mqttTrig1'
+# type = 'mqttClient'
+# protocol = 'mqtt'
+# host = 'broker.example.com'
+# username = 'myUser'
+# password = 'myPassword'
+# clientId = 'myClientId'
+# protocolVersion = '3.1.1'
+# subscriptions = ['my/first/topic/#', 'my/second/topic/#']
+
+# Example Beckhoff Trigger Configuration:
+# [[triggers]]
+# name = 'beckhoffTrig1'
+# type = 'beckhoff'
+# localAmsNetId = '192.168.5.221.1.2'
+# localAdsPort = 32750
+# targetAmsNetId = '5.123.154.18.1.1'
+# targetAdsPort = 851
+# routerHost = '127.0.0.1'
+# routerTcpPort = 48898
+# cycleTimeMs = 1000
+# subscriptionItems = [ 'GVL_Var.TestDint1', 'GVL_Var.TestDint2' ]
+
+
+# [healthCheck]
+# If the health check endpoint should be enabled
+# Environment Variable: HEALTH_CHECK_ENABLED
+#
+# enabled = true
+#
+# Port to run health check endpoint on
+# Environment Variable: HEALTH_CHECK_PORT
+#
+# port = 8010
+#
+# Address to bind the health check endpoint to. Set to '0.0.0.0' to bind to
+# all interfaces (e.g. for Kubernetes liveness probes).
+# Environment Variable: HEALTH_CHECK_ADDRESS
+#
+# address = '127.0.0.1'
+#
+# If the agent should be marked as unhealthy when it is not connected to Losant
+# Environment Variable: HEALTH_CHECK_OFFLINE_IS_UNHEALTHY
+#
+# offlineIsUnhealthy = false
+
+# [otlpCollector]
+# OpenTelemetry collector endpoint configuration.
+# Environment Variable: OTLP_COLLECTOR_URL
+#
+# url = 'http://localhost:4318'
+#
+# Authentication type: "none" | "basic" | "bearer" | "clientCert"
+# Environment Variable: OTLP_COLLECTOR_AUTH_TYPE
+#
+# authType = 'none'
+#
+# Basic authentication credentials (when authType = "basic")
+# Environment Variable: OTLP_COLLECTOR_USERNAME
+# Environment Variable: OTLP_COLLECTOR_PASSWORD
+#
+# username = ''
+# password = ''
+#
+# Bearer token (when authType = "bearer")
+# Environment Variable: OTLP_COLLECTOR_BEARER_TOKEN
+#
+# bearerToken = ''
+#
+# Client certificate paths (when authType = "clientCert")
+# Environment Variable: OTLP_COLLECTOR_CLIENT_CERT_PATH
+# Environment Variable: OTLP_COLLECTOR_CLIENT_KEY_PATH
+#
+# clientCertPath = '/path/to/client.crt'
+# clientKeyPath = '/path/to/client.key'
+#
+# Optional custom CA certificate path
+# Environment Variable: OTLP_COLLECTOR_CA_CERT_PATH
+#
+# caCertPath = '/path/to/ca.crt'
+#
+# Skip SSL verification
+# Environment Variable: OTLP_COLLECTOR_DISABLE_SSL_VERIFICATION
+#
+# disableSSLVerification = false
+#
+# Resource attributes to attach to all exported data batches
+# Environment Variable: OTLP_COLLECTOR_RESOURCE_ATTRIBUTES (a JSON object string)
+# [otlpCollector.resourceAttributes]
+# "service.name" = "gea"
+# "host.name" = "edge-gateway-01"
+
+# [otelReporting]
+# Automatically send container metrics to the configured OTel collector.
+# Requires [otlpCollector] to be configured.
+# Environment Variable: OTEL_REPORTING_ENABLED
+#
+# enabled = false
+#
+# Export interval in seconds (default 30)
+# Environment Variable: OTEL_REPORTING_INTERVAL_SECONDS
+#
+# intervalSeconds = 30

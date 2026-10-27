@@ -1,0 +1,17 @@
+{
+  "name": "edge-agent-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.22.1"
+  },
+  "dependencies": {
+    "license-checker": "^25.0.1",
+    "omnibelt": "^4.1.0",
+    "spdx-expression-parse": "^3.0.1"
+  },
+  "devDependencies": {
+    "should": "^13.2.3"
+  }
+}

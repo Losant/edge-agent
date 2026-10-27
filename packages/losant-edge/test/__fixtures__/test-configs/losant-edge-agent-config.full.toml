@@ -1,0 +1,49 @@
+[logger]
+out = './test/testing-workspace/full/losant-edge-agent-log.log'
+level = 'info'
+
+[gateway]
+host = '127.0.0.1'
+protocol = 'mqtt://'
+id = '5bca18c752bc9b0006fab719'
+key = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+secret = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+subscribeToPeripheralUpdates = false
+queueOfflineMessages = true
+
+[gateway.clientSsl]
+# keyPath = ''
+# certificatePath = ''
+
+[store]
+path = './test/testing-workspace/full/losant-edge-agent-store.db'
+
+[udp]
+# address = '0.0.0.0'
+
+[webserver]
+port = 2319
+address = '127.0.0.1'
+enabled = true
+# username = ''
+# password = ''
+
+[webserver.ssl]
+# keyPath = ''
+# certificatePath = ''
+# bundlePath = ''
+
+[workflow]
+# directory = ''
+
+[localBroker]
+enabled = true
+port = 42069
+address = '0.0.0.0'
+username = 'tester'
+password = 'secret'
+
+[localBroker.ssl]
+# keyPath = ''
+# certificatePath = ''
+# bundlePath = ''

@@ -1,0 +1,17 @@
+{
+  "allowed": [
+    "0BSD", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "BlueOak-1.0.0", "CC0-1.0", "ISC",
+    "MIT", "MIT-0", "MPL-2.0", "Public Domain", "Python-2.0", "Unlicense", "WTFPL", "Zlib"
+  ],
+  "notes": {
+    "MPL-2.0": "Weak, file-level copyleft. Fine for unmodified dependencies; patching one needs review.",
+    "Public Domain": "Not an SPDX id. Matched literally for packages that declare it in package.json."
+  },
+  "overrides": {
+    "dequeue": { "license": "BSD-2-Clause", "reason": "package.json has no license field; LICENSE file is the 2-clause BSD text" },
+    "humanize": { "license": "MIT", "reason": "package.json has no license field; LICENSE file is the MIT text" },
+    "nmea-0183": { "license": "MIT", "reason": "package.json has no license field; LICENSE file is the MIT text" },
+    "precond": { "license": "MIT", "reason": "package.json has no license field; README states MIT" },
+    "url-template": { "license": "BSD-3-Clause", "reason": "package.json says \"BSD\"; LICENSE file is the 3-clause BSD text" }
+  }
+}

@@ -1,0 +1,10 @@
+[gateway]
+host = 'localhost'
+protocol = 'mqtts://'
+id = '123512351235123512351235'
+key = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+secret = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+[localBroker]
+port = 2319
+enabled = true
