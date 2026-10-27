@@ -12,7 +12,7 @@ export default [
   ...nodeConfig,
   {
     rules: {
-      'import/no-unresolved': ['error', { ignore: ['uuid', 'cacheable-lookup', '@tensorflow/tfjs-node', 'seedrandom'] }]
+      'import/no-unresolved': ['error', { ignore: ['uuid', 'cacheable-lookup', '@tensorflow/tfjs-node', 'seedrandom', 'spdx-expression-parse', 'license-checker', 'omnibelt'] }]
     }
   },
   {

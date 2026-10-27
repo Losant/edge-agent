@@ -25,6 +25,8 @@
     "lint:staged": "lint-staged",
     "scripts:lint": "eslint scripts",
     "scripts:lint:fix": "pnpm scripts:lint --fix",
+    "scripts:test": "pnpm mocha scripts/test/*-spec.js",
+    "licenses:check": "node scripts/third-party-licenses.js . --check",
     "test:env:up": "node scripts/test-infra/up.mjs",
     "test:env:down": "docker compose -f scripts/test-infra/compose-local.yml down",
     "test": "pnpm handlebars:test && pnpm nodejs-utils:test && pnpm sandcastle:test && pnpm nodes:test && pnpm edge:test",

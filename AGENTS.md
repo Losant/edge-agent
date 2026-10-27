@@ -43,6 +43,11 @@ use that version, not whatever's on `PATH`.
   `pnpm <package>:test` (e.g. `pnpm edge:test`, `pnpm nodes:test`).
 - Lint: `pnpm lint`, or `pnpm <package>:lint` / `pnpm <package>:lint:fix` for
   one package.
+- Licenses: `pnpm licenses:check` (needs `pnpm install:scripts` once) fails if
+  any dependency's license isn't allowed. The policy is
+  `scripts/license-policy.json`: add a license to `allowed`, or add an
+  `overrides` entry with a `reason` for a package whose metadata is wrong or
+  missing. CI runs it on every PR.
 - Some suites need a real service. Before any test runs, `edge:test` and
   `nodes:test` check that their services are reachable and **fail the run**
   with instructions if one is not:

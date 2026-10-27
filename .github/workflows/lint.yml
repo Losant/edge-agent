@@ -30,4 +30,7 @@ jobs:
         node-version-file: '.node-version'
         cache: 'pnpm'
     - run: pnpm install --frozen-lockfile
+    - run: pnpm install:scripts --frozen-lockfile
     - run: pnpm lint
+    - run: pnpm scripts:test
+    - run: pnpm licenses:check
