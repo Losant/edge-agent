@@ -56,7 +56,6 @@ export const SNMP_ENCRYPTION_METHODS = [
 ];
 
 export const PACKAGE_ROOT_DIR = fromPackageRoot();
-export const PROJECT_ROOT_DIR = fromPackageRoot('..', '..');
 export const AGENT_VERSION = semver.parse(pkg.version);
 export const CONF_PATH_DEFAULT = process.env.CONF_PATH_DEFAULT || fromPackageRoot('losant-edge-agent-config.toml');
 export const LOGGER_OUT_DEFAULT = process.env.LOGGER_OUT_DEFAULT || 'console';

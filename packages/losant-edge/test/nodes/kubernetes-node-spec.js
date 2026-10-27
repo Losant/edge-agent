@@ -7,7 +7,7 @@ import fs from 'fs-extra';
 import { mapP } from 'omnibelt';
 import { nock, sinon, should, restoreEnv } from '../common.js';
 import errors from 'losant-nodejs-utils/src/errors.js';
-import { PROJECT_ROOT_DIR } from '../../src/constants.js';
+import { PACKAGE_ROOT_DIR } from '../../src/constants.js';
 import { guardPath, loadGuardedFile } from '../../src/lib/protected-path-utils.js';
 import KubernetesNode, {
   makeKubernetesRequest,
@@ -287,7 +287,7 @@ describe('KubernetesNode', () => {
     });
 
     it('throws Validation if tokenDiskPathTemplate attempts to access protected Losant Edge Agent directory', async () => {
-      const protectedPath = path.resolve(PROJECT_ROOT_DIR, 'package.json');
+      const protectedPath = path.resolve(PACKAGE_ROOT_DIR, 'package.json');
       await resolveAuth({
         authMode: 'inline',
         kubernetesUrlTemplate: SERVER_URL,
@@ -349,7 +349,7 @@ describe('KubernetesNode', () => {
     });
 
     it('throws Validation if caCertDiskPathTemplate points inside protected directory', async () => {
-      const protectedPath = path.resolve(PROJECT_ROOT_DIR, 'package.json');
+      const protectedPath = path.resolve(PACKAGE_ROOT_DIR, 'package.json');
       await resolveAuth({
         authMode: 'inline',
         kubernetesUrlTemplate: SERVER_URL,
@@ -565,7 +565,7 @@ describe('KubernetesNode', () => {
       });
 
       it('throws Validation if manifestDiskPathTemplate targets protected Losant directory', async () => {
-        const protectedPath = path.resolve(PROJECT_ROOT_DIR, 'package.json');
+        const protectedPath = path.resolve(PACKAGE_ROOT_DIR, 'package.json');
         const node = {
           manifestSource: 'diskPath',
           manifestDiskPathTemplate: protectedPath
@@ -1466,7 +1466,7 @@ data:
     });
 
     it('throws Validation when guarded token path is inside protected directory', async () => {
-      const protectedPath = path.resolve(PROJECT_ROOT_DIR, 'package.json');
+      const protectedPath = path.resolve(PACKAGE_ROOT_DIR, 'package.json');
       const node = buildNode({
         operationTemplate: 'listPods',
         tokenSource: 'diskPath',
@@ -1745,7 +1745,7 @@ data:
       });
 
       it('throws Validation if resultDiskPathTemplate targets protected Losant directory', async () => {
-        const protectedPath = path.resolve(PROJECT_ROOT_DIR, 'out.txt');
+        const protectedPath = path.resolve(PACKAGE_ROOT_DIR, 'out.txt');
         await resolveAndValidateDiskPath({ resultDiskPathTemplate: protectedPath }, {}, defaultContext)
           .should.be.rejectedWith({ type: 'Validation', message: 'Cannot access within the protected Losant Edge Agent directory.' });
       });
@@ -1956,7 +1956,7 @@ data:
       });
 
       it('throws Validation during node.run if resultDiskPathTemplate targets protected Losant directory', async () => {
-        const protectedPath = path.resolve(PROJECT_ROOT_DIR, 'out.txt');
+        const protectedPath = path.resolve(PACKAGE_ROOT_DIR, 'out.txt');
         const node = buildNode({
           operationTemplate: 'getPod',
           namespaceTemplate: 'default',
@@ -2598,7 +2598,7 @@ metadata:
     });
 
     it('throws Validation when manifestDiskPathTemplate targets protected directory', async () => {
-      const protectedPath = path.resolve(PROJECT_ROOT_DIR, 'package.json');
+      const protectedPath = path.resolve(PACKAGE_ROOT_DIR, 'package.json');
       const node = buildNode({
         operationTemplate: 'applyManifest',
         manifestSource: 'diskPath',

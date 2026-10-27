@@ -2,7 +2,7 @@ import path from 'node:path';
 import fs from 'fs-extra';
 import errors from 'losant-nodejs-utils/src/errors.js';
 import { ONE_MEGABYTE } from 'losant-nodejs-utils/src/constants/size.js';
-import { PROJECT_ROOT_DIR } from '../constants.js';
+import { PACKAGE_ROOT_DIR } from '../constants.js';
 
 const PROTECTED_PATH_MESSAGE = 'Cannot access within the protected Losant Edge Agent directory.';
 const DIRECTORY_MESSAGE = 'The provided disk path is a directory.';
@@ -17,7 +17,7 @@ const sizeMessage = (maxSize) => (maxSize >= ONE_MEGABYTE
 
 export const isProtectedPath = (candidate) => {
   const resolved = path.resolve(candidate);
-  return resolved === PROJECT_ROOT_DIR || resolved.startsWith(`${PROJECT_ROOT_DIR}${path.sep}`);
+  return resolved === PACKAGE_ROOT_DIR || resolved.startsWith(`${PACKAGE_ROOT_DIR}${path.sep}`);
 };
 
 export const checkProtectedPath = (candidate) => {

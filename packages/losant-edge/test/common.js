@@ -9,7 +9,7 @@ import nock from 'nock';
 import tk from 'timekeeper';
 import { createSandbox } from 'sinon';
 import snap7 from 'node-snap7';
-import { AGENT_VERSION } from '../src/constants.js';
+import { AGENT_VERSION, PACKAGE_ROOT_DIR } from '../src/constants.js';
 import LevelManager from '../src/level/manager.js';
 import * as nodeManager from '../src/node-manager.js';
 import fakeOpcuaServer from './lib/opcua-test-server.js';
@@ -40,6 +40,12 @@ const sinonSandbox = createSandbox();
 let fakeBroker, levelManager, s7Server, socat;
 
 const mochaGlobalSetup = async function() {
+  // Tests run with cwd at the monorepo root, but a deployed agent runs with
+  // cwd at its own package root. Match that here (after mocha has already
+  // resolved and loaded spec files) so relative-path protection tests
+  // (e.g. serial-write-node-spec's pathTemplate: '.{{ path }}') behave the
+  // same as production instead of resolving against the wrong directory.
+  process.chdir(PACKAGE_ROOT_DIR);
   levelManager = LevelManager({
     basePath: pathToLevelDbTesting,
     path: path.resolve(pathToLevelDbTesting, '111111111111111111111111')
