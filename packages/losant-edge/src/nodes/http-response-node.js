@@ -4,8 +4,6 @@ import { is, isNilOrEmpty, mapRejectNil } from 'omnibelt';
 
 import { mapRejectNilKeyValTemplates, checkEncoding } from '../utils.js';
 
-const TEMPLATE_TYPES = new Set(['string', 'path', 'payload', 'diskPath']);
-
 class HttpResponseNode {
 
   /* Example Config:
