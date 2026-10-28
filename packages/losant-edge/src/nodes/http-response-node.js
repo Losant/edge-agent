@@ -11,8 +11,7 @@ class HttpResponseNode {
   /* Example Config:
   {
     bodyTemplate: <String - Optional: template for the response body. Used when bodyTemplateType is string or path. Empty body when omitted>,
-    bodyTemplateType: <String - Optional: how to interpret bodyTemplate (string|path|payload|diskPath). Default string. string renders it as a template, path sends the value at that payload path, payload sends the entire payload (bodyTemplate is ignored), diskPath reads the file at diskPathTemplate and sends its raw bytes. Non-string, non-diskPath bodies are JSON-serialized>,
-    diskPathTemplate: <String - Required when bodyTemplateType is diskPath: the location of the file to read and send as the response body>,
+    bodyTemplateType: <String - Optional: how to interpret bodyTemplate (string|path|payload|diskPath). Default string. string renders it as a template, path sends the value at that payload path, payload sends the entire payload (bodyTemplate is ignored), diskPath reads the file at bodyTemplate and sends its raw bytes. Non-string, non-diskPath bodies are JSON-serialized>,
     encodingTemplate: <String - Optional, only used when bodyTemplateType is diskPath: encoding the file is read/round-tripped with (ascii|utf8|utf16le|ucs2|base64|latin1|binary|hex). Default binary, which is lossless for any file content - the file's raw bytes are sent as-is regardless of this value, it only controls the intermediate string representation>,
     headerInfo: [
       0 or more of:
@@ -38,8 +37,7 @@ class HttpResponseNode {
     this.id = id;
     this.outputIds = outputIds;
     this.bodyTemplate = config.bodyTemplate;
-    this.bodyTemplateType = TEMPLATE_TYPES.has(config.bodyTemplateType) ? config.bodyTemplateType : 'string';
-    this.diskPathTemplate = config.diskPathTemplate;
+    this.bodyTemplateType = config.bodyTemplateType || 'string';
     this.encodingTemplate = config.encodingTemplate || 'binary';
     this.headerInfo = config.headerInfo || [];
     this.cookieInfo = config.cookieInfo || [];
@@ -55,7 +53,7 @@ class HttpResponseNode {
     if (this.bodyTemplateType === 'payload') {
       body = payload;
     } else if (this.bodyTemplateType === 'diskPath') {
-      const renderedPath = payloadHelper.renderToString(this.diskPathTemplate, payload);
+      const renderedPath = payloadHelper.renderToString(this.bodyTemplate, payload);
       const { realPath } = await context.diskUtils.guardFileReadPath(renderedPath);
       diskEncoding = payloadHelper.renderToString(this.encodingTemplate, payload);
       checkEncoding(diskEncoding);

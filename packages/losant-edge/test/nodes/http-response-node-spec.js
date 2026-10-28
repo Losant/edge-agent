@@ -80,7 +80,7 @@ describe('HttpResponseNode', () => {
     it('should send the file\'s raw bytes as a Buffer, defaulting to binary encoding', async () => {
       const node = new HttpResponseNode('id', [[1]], {
         bodyTemplateType: 'diskPath',
-        diskPathTemplate: '{{ filename }}'
+        bodyTemplate: '{{ filename }}'
       });
       const { context, deferred } = contextForReply();
 
@@ -95,7 +95,7 @@ describe('HttpResponseNode', () => {
     it('should honor an explicit encodingTemplate', async () => {
       const node = new HttpResponseNode('id', [[1]], {
         bodyTemplateType: 'diskPath',
-        diskPathTemplate: '{{ filename }}',
+        bodyTemplate: '{{ filename }}',
         encodingTemplate: 'latin1'
       });
       const { context, deferred } = contextForReply();
@@ -110,7 +110,7 @@ describe('HttpResponseNode', () => {
     it('should throw a validation error for an invalid encodingTemplate', async () => {
       const node = new HttpResponseNode('id', [[1]], {
         bodyTemplateType: 'diskPath',
-        diskPathTemplate: '{{ filename }}',
+        bodyTemplate: '{{ filename }}',
         encodingTemplate: 'bogus'
       });
       const { context } = contextForReply();
@@ -127,7 +127,7 @@ describe('HttpResponseNode', () => {
     it('should throw if the file does not exist', async () => {
       const node = new HttpResponseNode('id', [[1]], {
         bodyTemplateType: 'diskPath',
-        diskPathTemplate: '{{ filename }}'
+        bodyTemplate: '{{ filename }}'
       });
       const { context } = contextForReply();
       const filename = '/tmp/THIS IS NOT A FILE THAT EXISTS...';
