@@ -1,16 +1,19 @@
+import fs from 'fs-extra';
 import * as payloadHelper from 'losant-handlebars';
 import { is, isNilOrEmpty, mapRejectNil } from 'omnibelt';
 
-import { mapRejectNilKeyValTemplates } from '../utils.js';
+import { mapRejectNilKeyValTemplates, checkEncoding } from '../utils.js';
 
-const TEMPLATE_TYPES = new Set(['string', 'path', 'payload']);
+const TEMPLATE_TYPES = new Set(['string', 'path', 'payload', 'diskPath']);
 
 class HttpResponseNode {
 
   /* Example Config:
   {
     bodyTemplate: <String - Optional: template for the response body. Used when bodyTemplateType is string or path. Empty body when omitted>,
-    bodyTemplateType: <String - Optional: how to interpret bodyTemplate (string|path|payload). Default string. string renders it as a template, path sends the value at that payload path, payload sends the entire payload (bodyTemplate is ignored). Non-string bodies are JSON-serialized>,
+    bodyTemplateType: <String - Optional: how to interpret bodyTemplate (string|path|payload|diskPath). Default string. string renders it as a template, path sends the value at that payload path, payload sends the entire payload (bodyTemplate is ignored), diskPath reads the file at diskPathTemplate and sends its raw bytes. Non-string, non-diskPath bodies are JSON-serialized>,
+    diskPathTemplate: <String - Required when bodyTemplateType is diskPath: the location of the file to read and send as the response body>,
+    encodingTemplate: <String - Optional, only used when bodyTemplateType is diskPath: encoding the file is read/round-tripped with (ascii|utf8|utf16le|ucs2|base64|latin1|binary|hex). Default binary, which is lossless for any file content - the file's raw bytes are sent as-is regardless of this value, it only controls the intermediate string representation>,
     headerInfo: [
       0 or more of:
       { keyTemplate: <String - Required: template for header key name>,
@@ -36,6 +39,8 @@ class HttpResponseNode {
     this.outputIds = outputIds;
     this.bodyTemplate = config.bodyTemplate;
     this.bodyTemplateType = TEMPLATE_TYPES.has(config.bodyTemplateType) ? config.bodyTemplateType : 'string';
+    this.diskPathTemplate = config.diskPathTemplate;
+    this.encodingTemplate = config.encodingTemplate || 'binary';
     this.headerInfo = config.headerInfo || [];
     this.cookieInfo = config.cookieInfo || [];
     this.responseCodeTemplate = config.responseCodeTemplate;
@@ -46,8 +51,15 @@ class HttpResponseNode {
     if (isNilOrEmpty(replyId)) { return [this.outputIds, payload]; }
 
     let body = '';
+    let diskEncoding;
     if (this.bodyTemplateType === 'payload') {
       body = payload;
+    } else if (this.bodyTemplateType === 'diskPath') {
+      const renderedPath = payloadHelper.renderToString(this.diskPathTemplate, payload);
+      const { realPath } = await context.diskUtils.guardFileReadPath(renderedPath);
+      diskEncoding = payloadHelper.renderToString(this.encodingTemplate, payload);
+      checkEncoding(diskEncoding);
+      body = (await fs.readFile(realPath)).toString(diskEncoding);
     } else if (this.bodyTemplate) {
       if (this.bodyTemplateType === 'path') {
         body = payloadHelper.lookup(this.bodyTemplate, payload);
@@ -55,7 +67,13 @@ class HttpResponseNode {
         body = payloadHelper.render(this.bodyTemplate, payload);
       }
     }
-    if (!is(String, body)) { body = JSON.stringify(body) || ''; }
+    if (this.bodyTemplateType === 'diskPath') {
+      // Re-encode with the same encoding used to read it, so the round trip is lossless
+      // and the Buffer sent downstream matches the file's original bytes exactly.
+      body = Buffer.from(body, diskEncoding);
+    } else if (!is(String, body)) {
+      body = JSON.stringify(body) || '';
+    }
     const headers = mapRejectNilKeyValTemplates(this.headerInfo, payload);
 
     const cookies = mapRejectNil(({ nameTemplate, valueTemplate, maxAgeTemplate, pathTemplate }) => {
