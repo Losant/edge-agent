@@ -2,6 +2,8 @@ import { levelManager } from '../common.js';
 import { defer, noop } from 'omnibelt';
 import fs from 'fs-extra';
 import path from 'node:path';
+import Stream from 'node:stream';
+import { buffer as streamToBuffer } from 'node:stream/consumers';
 import NodeRunner from '../../src/node-runner.js';
 import HttpResponseNode from '../../src/nodes/http-response-node.js';
 
@@ -77,7 +79,7 @@ describe('HttpResponseNode', () => {
       return { context, deferred };
     };
 
-    it('should send the file\'s raw bytes as a Buffer, defaulting to binary encoding', async () => {
+    it('should stream the file\'s raw bytes as the response body', async () => {
       const node = new HttpResponseNode('id', [[1]], {
         bodyTemplateType: 'diskPath',
         bodyTemplate: '{{ filename }}'
@@ -88,40 +90,9 @@ describe('HttpResponseNode', () => {
       const response = await deferred.promise;
 
       const expected = await fs.readFile(FIXTURE_PATH);
-      Buffer.isBuffer(response.body).should.be.true();
-      Buffer.compare(response.body, expected).should.equal(0);
-    });
-
-    it('should honor an explicit encodingTemplate', async () => {
-      const node = new HttpResponseNode('id', [[1]], {
-        bodyTemplateType: 'diskPath',
-        bodyTemplate: '{{ filename }}',
-        encodingTemplate: 'latin1'
-      });
-      const { context, deferred } = contextForReply();
-
-      await node.run(context, { filename: FIXTURE_PATH });
-      const response = await deferred.promise;
-
-      const expected = await fs.readFile(FIXTURE_PATH);
-      Buffer.compare(response.body, expected).should.equal(0);
-    });
-
-    it('should throw a validation error for an invalid encodingTemplate', async () => {
-      const node = new HttpResponseNode('id', [[1]], {
-        bodyTemplateType: 'diskPath',
-        bodyTemplate: '{{ filename }}',
-        encodingTemplate: 'bogus'
-      });
-      const { context } = contextForReply();
-
-      let error;
-      try {
-        await node.run(context, { filename: FIXTURE_PATH });
-      } catch (e) {
-        error = e;
-      }
-      error.message.should.equal('Encoding must be one of the following: ascii, utf8, utf16le, ucs2, base64, latin1, binary, hex.');
+      response.body.should.be.an.instanceOf(Stream.Readable);
+      const actual = await streamToBuffer(response.body);
+      Buffer.compare(actual, expected).should.equal(0);
     });
 
     it('should throw if the file does not exist', async () => {
