@@ -281,6 +281,60 @@ describe('Edge Webserver', function() {
     });
   });
 
+  it('should send a Buffer body as raw bytes, unmodified', async () => {
+    webserver = Webserver({ port: 45454 });
+    // Deliberately includes bytes >= 0x80 - these are exactly the bytes that get corrupted
+    // (expanded via UTF-8 re-encoding) if a Buffer body is ever coerced through a string first.
+    const rawBytes = Buffer.from([0x1f, 0x8b, 0x08, 0x00, 0x91, 0x3c, 0xe2, 0x6a, 0x00, 0x03, 0xed, 0x92, 0xc1, 0xff, 0x00]);
+    await webserver.initialize([{ triggerId: 'request' }], async (triggerFire) => {
+      await sleep(0);
+      webserver.flowResponse(triggerFire.payload.data.replyId, {
+        body: rawBytes,
+        headers: [{ key: 'content-type', value: 'application/octet-stream' }],
+        responseCode: 200
+      });
+    });
+
+    const response = await axios({
+      url: 'http://localhost:45454/bin',
+      method: 'get',
+      responseType: 'arraybuffer',
+      headers: {
+        'Accept-Encoding': false
+      }
+    });
+
+    response.status.should.deepEqual(200);
+    Buffer.compare(Buffer.from(response.data), rawBytes).should.equal(0);
+    response.headers.toJSON()['content-length'].should.equal(String(rawBytes.length));
+  });
+
+  it('should send a Readable stream body by piping it, unmodified', async () => {
+    webserver = Webserver({ port: 45454 });
+    const fixturePath = path.resolve(import.meta.dirname, '__fixtures__', 'weights.bin');
+    const expected = await fs.readFile(fixturePath);
+    await webserver.initialize([{ triggerId: 'request' }], async (triggerFire) => {
+      await sleep(0);
+      webserver.flowResponse(triggerFire.payload.data.replyId, {
+        body: fs.createReadStream(fixturePath),
+        headers: [{ key: 'content-type', value: 'application/octet-stream' }],
+        responseCode: 200
+      });
+    });
+
+    const response = await axios({
+      url: 'http://localhost:45454/bin',
+      method: 'get',
+      responseType: 'arraybuffer',
+      headers: {
+        'Accept-Encoding': false
+      }
+    });
+
+    response.status.should.deepEqual(200);
+    Buffer.compare(Buffer.from(response.data), expected).should.equal(0);
+  });
+
   it('should error with bad basic auth', async () => {
     webserver = Webserver({
       port: 45455,

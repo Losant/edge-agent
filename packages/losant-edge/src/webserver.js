@@ -1,4 +1,5 @@
 import { nanoid } from 'nanoid';
+import { Readable } from 'node:stream';
 import Hapi from '@hapi/hapi';
 import call from '@hapi/call';
 import rollbar from './rollbar.js';
@@ -89,10 +90,15 @@ const errorHandler = (request, event, tags) => {
 
 const applyResponse = (request, h, response) => {
   if (isNil(response.body)) { response.body = ''; }
-  if (is(Object, response.body)) {
-    response.body = JSON.stringify(response.body);
+  if (Buffer.isBuffer(response.body) || response.body instanceof Readable) {
+    // Sent verbatim as raw bytes - skip JSON/string coercion, which would corrupt binary content.
+    // (Buffer/Readable instances are `instanceof Object`, so they'd otherwise be caught by the check below.)
+  } else {
+    if (is(Object, response.body)) {
+      response.body = JSON.stringify(response.body);
+    }
+    response.body = toString(response.body);
   }
-  response.body = toString(response.body);
 
   const hapiResponse = h.response(response.body);
 
