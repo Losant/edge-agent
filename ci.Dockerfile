@@ -1,4 +1,4 @@
-FROM node:24.22.1-alpine3.23
+FROM node:24.22.2-alpine3.23
 
 ENV CI="true" \
   PNPM_HOME="/pnpm"

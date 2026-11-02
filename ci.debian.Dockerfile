@@ -1,4 +1,4 @@
-FROM node:24.22.1-trixie
+FROM node:24.22.2-trixie
 
 ENV CI="true" \
   PNPM_HOME="/pnpm"

@@ -11,7 +11,7 @@
   "main": "src/index.js",
   "type": "module",
   "engines": {
-    "node": "24.22.1"
+    "node": "24.22.2"
   },
   "exports": {
     ".": "./src/index.js",
@@ -26,12 +26,12 @@
     "geolib": "^3.3.14",
     "handlebars": "^4.7.10",
     "inflection": "^3.0.2",
-    "js-base64": "^3.9.4",
+    "js-base64": "^3.9.5",
     "moment": "^2.31.0",
-    "moment-timezone": "^0.6.5",
+    "moment-timezone": "^0.6.6",
     "nmea-0183": "github:nherment/node-nmea#07d805d",
     "omnibelt": "^4.1.0",
-    "qs": "^6.16.1",
+    "qs": "^6.17.1",
     "re2": "^1.27.0",
     "updeep": "^1.2.4",
     "xml-js": "^1.6.11"
