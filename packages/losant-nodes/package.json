@@ -51,7 +51,7 @@
     "knex": "^3.3.0",
     "losant-handlebars": "workspace:*",
     "losant-nodejs-utils": "workspace:*",
-    "losant-rest": "github:Losant/losant-rest-js#v4.3.0",
+    "losant-rest": "github:Losant/losant-rest-js#v4.4.0",
     "losant-sandcastle": "workspace:*",
     "moment-timezone": "^0.6.5",
     "mongodb": "~7.1.1",
