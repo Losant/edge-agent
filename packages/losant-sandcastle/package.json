@@ -1,0 +1,29 @@
+{
+  "name": "losant-sandcastle",
+  "version": "2.7.0",
+  "license": "Apache-2.0",
+  "description": "Sandbox for running untrusted JavaScript in Losant workflows",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Losant/edge-agent.git",
+    "directory": "packages/losant-sandcastle"
+  },
+  "main": "src/index.js",
+  "type": "module",
+  "engines": {
+    "node": "24.22.1"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json",
+    "./src/*.js": "./src/*.js",
+    "./src/*": "./src/*.js"
+  },
+  "dependencies": {
+    "fs-extra": "^11.4.1",
+    "length-prefixed-stream": "^2.0.0",
+    "losant-nodejs-utils": "workspace:*",
+    "omnibelt": "^4.1.0",
+    "yargs": "^18.2.0"
+  }
+}

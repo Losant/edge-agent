@@ -1,0 +1,37 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
+.private/
+.pnpm-store/
+.eslintcache
+coverage
+.husky/_/husky.sh
+.husky/.gitignore
+
+packages/*/node_modules
+packages/*/tmp
+packages/*/data
+
+# losant-edge runtime/test artifacts
+packages/losant-edge/losant-edge-agent-config.toml
+packages/losant-edge/losant-edge-agent-store.db/
+packages/losant-edge/test/testing-workspace/
+mosquitto.log
+
+# generated locally by losant-nodes tests, must not be committed
+packages/losant-nodes/test/__fixtures__/mydb.sqlite
+
+# node-opcua generates this locally
+pki
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/

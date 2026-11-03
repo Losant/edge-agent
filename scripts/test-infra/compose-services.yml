@@ -1,0 +1,74 @@
+# Backing services for test suites. Shared by scripts/test-infra/compose-ci.yml
+# (via `include`) and scripts/test-infra/compose-local.yml (via `extends`). No ports are published
+# here; CI reaches services over the compose network by service name.
+services:
+  redis:
+    image: 'redis:7.2-alpine'
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli ping | grep PONG']
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  # Single-node cluster that owns every slot. Only the `tester` user can log
+  # in. Cluster clients reconnect to the hostname the node announces, so
+  # REDIS_CLUSTER_ANNOUNCE_HOSTNAME has to resolve from where the tests run:
+  # the service name here, localhost in compose-local.yml.
+  redis-cluster:
+    image: 'redis:7.2-alpine'
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - REDIS_CLUSTER_ANNOUNCE_HOSTNAME=redis-cluster
+    command:
+      - sh
+      - -c
+      - |
+        redis-server --port 7379 --cluster-enabled yes --cluster-config-file /tmp/nodes.conf \
+          --cluster-announce-hostname "$$REDIS_CLUSTER_ANNOUNCE_HOSTNAME" \
+          --cluster-preferred-endpoint-type hostname \
+          --user default off --user tester on '>tester-pass' '~*' '&*' '+@all' &
+        pid=$$!
+        trap 'kill $$pid' TERM INT
+        cli() { redis-cli -p 7379 --user tester --pass tester-pass --no-auth-warning "$$@"; }
+        until cli ping 2> /dev/null | grep -q PONG; do sleep 0.2; done
+        cli cluster addslotsrange 0 16383 > /dev/null
+        wait $$pid
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli -p 7379 --user tester --pass tester-pass --no-auth-warning cluster info | grep -q cluster_state:ok']
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  # standalone on purpose: a replica set advertises the container hostname,
+  # which clients outside the compose network cannot resolve
+  mongodb:
+    image: 'mongo:8.0'
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.adminCommand("ping").ok']
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+
+  mosquitto:
+    image: 'eclipse-mosquitto:2.0.18'
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ../mosquitto/mosquitto-acl.ci:/mosquitto/config/acl-public.txt
+      - ../mosquitto/mosquitto-pwd.ci:/mosquitto/config/passwordfile.txt
+      - ../mosquitto/mosquitto.ci.conf:/mosquitto/config/mosquitto.conf
+    healthcheck:
+      test: ['CMD', 'mosquitto_pub', '-p', '1888', '-t', 'foo/healthcheck', '-m', 'ok', '-q', '1']
+      interval: 2s
+      timeout: 3s
+      retries: 15

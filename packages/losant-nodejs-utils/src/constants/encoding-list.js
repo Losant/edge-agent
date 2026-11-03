@@ -1,0 +1,10 @@
+export default [
+  'ascii',
+  'utf8',
+  'utf16le',
+  'ucs2',
+  'base64',
+  'latin1',
+  'binary',
+  'hex'
+];

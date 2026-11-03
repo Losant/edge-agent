@@ -1,0 +1,17 @@
+export const TEN_S_MS = 10 * 1000;
+export const THIRTY_S_MS = 3 * TEN_S_MS;
+export const ONE_MIN_MS = 60 * 1000;
+export const TEN_MIN_MS = 10 * ONE_MIN_MS;
+export const ONE_HOUR_S = 60*60;
+export const ONE_HOUR_MS = ONE_HOUR_S*1000;
+export const FIFTEEN_MIN_MS = 15 * 60 * 1000;
+export const ONE_DAY_S = 24*ONE_HOUR_S;
+export const ONE_DAY_MS = 24*ONE_HOUR_MS;
+export const TWO_DAYS_MS = 2 * ONE_DAY_MS;
+export const ONE_WEEK_S = 7*24*ONE_HOUR_S;
+export const ONE_WEEK_MS = ONE_WEEK_S * 1000;
+export const THIRTY_DAYS_MS = 30*24*ONE_HOUR_MS;
+export const THIRTY_ONE_DAYS_MS = 31*24*ONE_HOUR_MS;
+export const ONE_HUNDRED_EIGHTY_DAYS_MS = 180*24*ONE_HOUR_MS;
+export const THREE_MONTHS_MS = 3*31*24*ONE_HOUR_MS;
+export const ONE_YEAR_MS = 365*ONE_DAY_MS;

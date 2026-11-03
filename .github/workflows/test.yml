@@ -1,0 +1,140 @@
+name: Run Tests
+
+on:
+  pull_request:
+    types: ['opened', 'reopened', 'synchronize']
+
+concurrency:
+  group: test-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  # Fills the Actions cache with the public service images once per architecture,
+  # so the parallel test jobs only restore them.
+  service-images:
+    name: service images (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        include:
+          - { arch: amd64, runner: ubuntu-latest }
+          - { arch: arm64, runner: ubuntu-24.04-arm }
+    steps:
+    # tag v6.0.2
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+    # tag v4.4.1
+    - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
+    - name: Cache service images
+      # tag v7.5.0
+      uses: docker/bake-action@59cb1203cd42bcefd40a1b6d73b589e48c86040e
+      with:
+        targets: services
+        set: |
+          *.platform=linux/${{ matrix.arch }}
+          *.output=type=cacheonly
+          redis.cache-from=type=gha,scope=redis-${{ matrix.arch }}
+          redis.cache-to=type=gha,mode=max,scope=redis-${{ matrix.arch }}
+          mongodb.cache-from=type=gha,scope=mongodb-${{ matrix.arch }}
+          mongodb.cache-to=type=gha,mode=max,scope=mongodb-${{ matrix.arch }}
+          mosquitto.cache-from=type=gha,scope=mosquitto-${{ matrix.arch }}
+          mosquitto.cache-to=type=gha,mode=max,scope=mosquitto-${{ matrix.arch }}
+
+  test:
+    needs: service-images
+    name: test (${{ matrix.package }} / ${{ matrix.distro }} / ${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [handlebars, nodejs-utils, sandcastle, nodes, edge]
+        distro: [alpine, debian]
+        arch: [amd64, arm64]
+        include:
+          - { arch: amd64, runner: ubuntu-latest }
+          - { arch: arm64, runner: ubuntu-24.04-arm }
+          - { distro: alpine, dockerfile: ci.Dockerfile }
+          - { distro: debian, dockerfile: ci.debian.Dockerfile }
+          - { package: handlebars }
+          - { package: nodejs-utils }
+          - { package: sandcastle }
+          - { package: nodes, services: true }
+          - { package: edge, services: true }
+          # Temporary: mongo 8.0 refuses to start on the 7.0 kernel in newer
+          # ubuntu-24.04 images, so jobs that start mongo stay on 22.04 until a
+          # mongo release with the SERVER-131779 fix is out. See
+          # https://github.com/actions/runner-images/issues/15005
+          - { package: nodes, arch: amd64, runner: ubuntu-22.04 }
+          - { package: nodes, arch: arm64, runner: ubuntu-22.04-arm }
+          - { package: edge, arch: amd64, runner: ubuntu-22.04 }
+          - { package: edge, arch: arm64, runner: ubuntu-22.04-arm }
+    steps:
+    # tag v6.0.2
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+    # tag v4.4.1
+    - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
+    - name: Build runner image
+      # tag v7.5.0
+      uses: docker/bake-action@59cb1203cd42bcefd40a1b6d73b589e48c86040e
+      env:
+        CI_DOCKERFILE: ${{ matrix.dockerfile }}
+      with:
+        targets: test-image
+        load: true
+        set: |
+          *.platform=linux/${{ matrix.arch }}
+          *.cache-from=type=gha,scope=${{ matrix.distro }}-${{ matrix.arch }}
+          *.cache-to=type=gha,mode=max,scope=${{ matrix.distro }}-${{ matrix.arch }}
+    - name: Load service images
+      if: ${{ matrix.services }}
+      # tag v7.5.0
+      uses: docker/bake-action@59cb1203cd42bcefd40a1b6d73b589e48c86040e
+      with:
+        targets: services
+        load: true
+        set: |
+          *.platform=linux/${{ matrix.arch }}
+          redis.cache-from=type=gha,scope=redis-${{ matrix.arch }}
+          mongodb.cache-from=type=gha,scope=mongodb-${{ matrix.arch }}
+          mosquitto.cache-from=type=gha,scope=mosquitto-${{ matrix.arch }}
+    - name: Show environment
+      env:
+        CI_DOCKERFILE: ${{ matrix.dockerfile }}
+      run: |
+        echo "kernel: $(uname -srm)"
+        docker version --format 'docker: {{.Server.Version}}'
+        docker compose version
+        docker buildx version
+        if [ -n "${{ matrix.services }}" ]; then
+          docker compose -f scripts/test-infra/compose-ci.yml config --images \
+            | xargs docker image inspect --format '{{index .RepoTags 0}} {{.Id}} created {{.Created}}'
+        fi
+    - name: Start services
+      if: ${{ matrix.services }}
+      env:
+        CI_DOCKERFILE: ${{ matrix.dockerfile }}
+      run: docker compose -f scripts/test-infra/compose-ci.yml up -d --wait redis redis-cluster mongodb mosquitto
+    - name: Install and test
+      # runner.temp is a plain runner-owned directory. Mounting it over /tmp keeps
+      # fs.protected_regular (sticky /tmp only) from blocking root's writes to the
+      # runner-owned files that tests copy from the checkout.
+      env:
+        CI_DOCKERFILE: ${{ matrix.dockerfile }}
+      run: |
+        docker compose -f scripts/test-infra/compose-ci.yml run --rm --no-deps -v "${{ runner.temp }}:/tmp" losant-test \
+          sh -c "pnpm install --frozen-lockfile --filter='losant-${{ matrix.package }}...' && pnpm run ${{ matrix.package }}:test ${{ matrix.mochaArgs }}"
+    - name: Service logs
+      if: ${{ failure() && matrix.services }}
+      env:
+        CI_DOCKERFILE: ${{ matrix.dockerfile }}
+      run: docker compose -f scripts/test-infra/compose-ci.yml logs --no-color redis redis-cluster mongodb mosquitto
+    - name: Stop services
+      if: ${{ always() && matrix.services }}
+      env:
+        CI_DOCKERFILE: ${{ matrix.dockerfile }}
+      run: docker compose -f scripts/test-infra/compose-ci.yml down -v

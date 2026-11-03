@@ -1,0 +1,186 @@
+/*
+OPENSSL_CONF=./foo.cnf openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem
+
+foo.cnf:
+[req]
+distinguished_name  = req_distinguished_name
+x509_extensions     = v3_req
+prompt              = no
+[req_distinguished_name]
+C           = US
+ST          = VA
+L           = SomeCity
+O           = MyCompany
+OU          = MyDivision
+CN          = *.testDomainOne.com
+[v3_req]
+keyUsage           = keyEncipherment, dataEncipherment
+extendedKeyUsage   = serverAuth
+subjectAltName = @alt_names
+[alt_names]
+DNS.0 = testDomainOne.com
+DNS.1 = foo.testDomainOne.com
+DNS.2 = totallyOtherDomain.com
+DNS.3 = *.what.totallyOtherDomain.com
+*/
+
+export const altFakeDomainNames = [
+  '*.testDomainOne.com',
+  'testDomainOne.com',
+  'foo.testDomainOne.com',
+  'totallyOtherDomain.com',
+  '*.what.totallyOtherDomain.com'
+];
+
+export const altFakeSslCert = `-----BEGIN CERTIFICATE-----
+MIID/TCCAuWgAwIBAgIJAID3PDG7dakNMA0GCSqGSIb3DQEBBQUAMHQxCzAJBgNV
+BAYTAlVTMQswCQYDVQQIDAJWQTERMA8GA1UEBwwIU29tZUNpdHkxEjAQBgNVBAoM
+CU15Q29tcGFueTETMBEGA1UECwwKTXlEaXZpc2lvbjEcMBoGA1UEAwwTKi50ZXN0
+RG9tYWluT25lLmNvbTAeFw0xNzEyMDgyMjA4NThaFw0xODEyMDgyMjA4NThaMHQx
+CzAJBgNVBAYTAlVTMQswCQYDVQQIDAJWQTERMA8GA1UEBwwIU29tZUNpdHkxEjAQ
+BgNVBAoMCU15Q29tcGFueTETMBEGA1UECwwKTXlEaXZpc2lvbjEcMBoGA1UEAwwT
+Ki50ZXN0RG9tYWluT25lLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC
+ggEBALXAltG8dGEXQ79GOcpF3/TQapVroPNHQUP4m+dgx4Xf3cS1K6czsEKpZQV/
+9GLZP8DRZeft8MMg4u+UuobTLDtibExZo+zI6nXOEMI9fliKl4nDEVKJnf2d/3Ss
+sYVFNz4FiSrahJmfq4aYZvUALNMgCqtGvyVznLCyIxZR03C4FPDjSTfsxlqQaAmE
+fZxyA77DlD9SD6i5W/y4ZdJ/ZghSJRV2FJrjmGHOb57sKhiPhfOM+6Ddeo/A4AGb
+gY/BonSfD1Thh39AU6ufUiSwUveU/eJLuluXwMJ+zFr0f8pX8wA4aCHjQOGw+PN5
+WsfIxAA3+Isjwrq5TxZZ6XAXcSMCAwEAAaOBkTCBjjALBgNVHQ8EBAMCBDAwEwYD
+VR0lBAwwCgYIKwYBBQUHAwEwagYDVR0RBGMwYYIRdGVzdERvbWFpbk9uZS5jb22C
+FWZvby50ZXN0RG9tYWluT25lLmNvbYIWdG90YWxseU90aGVyRG9tYWluLmNvbYId
+Ki53aGF0LnRvdGFsbHlPdGhlckRvbWFpbi5jb20wDQYJKoZIhvcNAQEFBQADggEB
+AIkRkNaaYoeQRRzfAGQnkncYrRqYgHgrHx9xNYtOe5nk028bzISCG7sUnLScyJww
+wYXc7IeCmtM8wL9lmUtz9BhTDZc1RHilNRdbsYJmFfe85ml0NQq5lfxei2RFrjkt
+f+Nrkg8j36JItuTlNPIJ5N2++MRNcPR9Y5UxsK1xYIwtPAkjQRZ99q5CXCVYG5R4
+BnMve5lwDE5xCBPDiQKwoZH9+wvVM5uyYUB7VvfI8DpVWnCerkutEv0dLrYYqBsW
+CBc7MlC3LDcA2L2A9bdjuTDrZZCiE63dggdyDMgb+gZcTV2BX71FHE6vaYpcz8zr
+6/xXfI1tnZNecltW77l77O4=
+-----END CERTIFICATE-----`;
+
+export const altFakeSslKey = `-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAtcCW0bx0YRdDv0Y5ykXf9NBqlWug80dBQ/ib52DHhd/dxLUr
+pzOwQqllBX/0Ytk/wNFl5+3wwyDi75S6htMsO2JsTFmj7Mjqdc4Qwj1+WIqXicMR
+Uomd/Z3/dKyxhUU3PgWJKtqEmZ+rhphm9QAs0yAKq0a/JXOcsLIjFlHTcLgU8ONJ
+N+zGWpBoCYR9nHIDvsOUP1IPqLlb/Lhl0n9mCFIlFXYUmuOYYc5vnuwqGI+F84z7
+oN16j8DgAZuBj8GidJ8PVOGHf0BTq59SJLBS95T94ku6W5fAwn7MWvR/ylfzADho
+IeNA4bD483lax8jEADf4iyPCurlPFlnpcBdxIwIDAQABAoIBAF9/cP+E+NVnBvbC
+rGzGqDUXKVmXcrtBDl7riudZJ50FEp5f3y78brmoDeeE4uDpa6EhpVzm3eF5LyRZ
+TmS3In+VaHf5hbNNojwB6TZWX0Oglp0Q/NIUcwomcWpZrvDqfGs/N2Jn7NJXXiXb
+gAVtcSABrvlts9O22nbRMrRwjBumCrvZfPeuu8fEzGOkNjMUciz8Ujf5BJVg3VU8
+cxbM2u7t9Z8BaNSYOHsgZLXzkL23iwVIIolfTylXdlsqytnP8w0HAXLKsIv90Bxf
+v3c2jB0aK+jICKasAPlL3/CmqRIq2I5n++d06DYFuPfecGRkIM6ueQp9OJth8NqD
+ZcL7zmkCgYEA3imi55R/WVinsqf4WZa6HssEIVo7NtMp45ZR+ZBs8DnK6FMRRiit
+e/m+9WDN5bkRUFjHNw4TE5wovJ7Ii81Uzetfx2hhzxXcnoLKNK7gikFs40xXp+Ai
+fDwr/FW74qaMQgNnCUMrZrFhhttZ5pUGiPmCLIcsGLs0bAPcAvGK1/UCgYEA0W9P
+PnFy6pOQnGYGnU+LJTnR4H01Q5Z4O5voBcZDAhQi6jOlynQyKayTbDBzsmYEqRzP
+5QzRfZG7ZNcgBhaPf1MLFrIG8pwWtbsFg3dq2J25tj7S6XoT7t1QNXUcO1P8Qvzj
+X8f4eyn/xbusov2yPs/KeUl0MBQfdYoT+Xa9LbcCgYEArBO/9HPW+BNtQTpNaMcQ
+vo0tU9AaEWsaBQgH0rAFUUTSX4UH2jnjtiVJvbIPiSIBwSQimggyynuoKgErAO44
+A4+OjlvRdp9OVRClIo1ZqnzmpGAbfRJkY6oPv9GASBwMg40zH7+BPHekPNpmFe3U
+NABezbKde0J1ZjzPCxCgJIkCgYEAvjw2JckVEgAyBe4iqfebs5eejSQOIrNlyPdn
+vP8G1LeHs2ZwfMIo4nPQgSBNp0lFiHsUV8DZ9Q5PwlwpyX3qoEPFObtB1lNzyWT0
+sCLjmZlDHEhaehsaSgkbF0Ol/jneVNayjcjtaqqOmoRLXs3Ef4ttJdhTwmw02yYt
+2JZDZmcCgYBhwWLHj98SwexcuJ9ZxPFiIAn3lRenIcIHENwibW1NqAilJ+I/lQqi
+g3YCKcUGclDvV/YSmVesGUId4sZNhyAv/tCT2D2rwZaDeaWAUybDCIgao5UazXO1
+jkJj4ObZo58S1YfqJ78oju826KJMraq7g+9ncAXC7yR+yFU0DxXIKQ==
+-----END RSA PRIVATE KEY-----`;
+
+/*
+OPENSSL_CONF=./foo.cnf openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 3650 -out certificate.pem
+
+foo.cnf:
+[req]
+distinguished_name  = req_distinguished_name
+x509_extensions     = v3_req
+prompt              = no
+[req_distinguished_name]
+C           = US
+ST          = VA
+L           = SomeCity
+O           = MyCompany
+OU          = MyDivision
+CN          = redis
+[v3_req]
+keyUsage           = keyEncipherment, dataEncipherment
+extendedKeyUsage   = serverAuth
+subjectAltName = @alt_names
+[alt_names]
+DNS.0 = redis
+DNS.1 = localhost
+DNS.2 = 127.0.0.1
+*/
+export const fakeRedisCert = `-----BEGIN CERTIFICATE-----
+MIIDxTCCAq2gAwIBAgIURGL73k5HO3XtT0v9rN6rpj2N+dMwDQYJKoZIhvcNAQEL
+BQAwZjELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAlZBMREwDwYDVQQHDAhTb21lQ2l0
+eTESMBAGA1UECgwJTXlDb21wYW55MRMwEQYDVQQLDApNeURpdmlzaW9uMQ4wDAYD
+VQQDDAVyZWRpczAeFw0yMzA2MzAyMDI2NDZaFw0zMzA2MjcyMDI2NDZaMGYxCzAJ
+BgNVBAYTAlVTMQswCQYDVQQIDAJWQTERMA8GA1UEBwwIU29tZUNpdHkxEjAQBgNV
+BAoMCU15Q29tcGFueTETMBEGA1UECwwKTXlEaXZpc2lvbjEOMAwGA1UEAwwFcmVk
+aXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCjBQZ7IEowK4OjQwWr
+xpLF1ugeFQ69QFShZLkqRkezXxtCd6Sde/pPliC/SFWyuxV13q8lrYapthDlgtq6
+gnbqXU0ZhtMhMfuNCj+XovTK1YDD/L4PT0mma4xyR1zgd6SUUNkgr/iBffwmjtce
+ZPwqI4z5jj2WClJWKzLO3SQ0BoNDfNhh2Pxhmf7rDkV4a0eBZ4pWdUyDWmIME43B
+uTxWRG+M9SGmEy/dZQ89ysJIPxiUvkhEcdCsOiuxGJt3qSUxaDv49MgbKKptHXMk
+3tEsMpVyqy4TdZrsOCfkq0nb5QPi0u4s7zJ/Mqz1GW3bfbMVQTd7FF4vZy+Y5+jM
+5GadAgMBAAGjazBpMAsGA1UdDwQEAwIEMDATBgNVHSUEDDAKBggrBgEFBQcDATAm
+BgNVHREEHzAdggVyZWRpc4IJbG9jYWxob3N0ggkxMjcuMC4wLjEwHQYDVR0OBBYE
+FDirYgm1nrvL2M/E0RsdKiWHu87zMA0GCSqGSIb3DQEBCwUAA4IBAQCf0SA3zgCt
+BFXTbTAJ++CbW5tDjh3Kye2AC162tMmCNWE6w3JBZ7bgJDN3tPXMF/Vpx0POt76E
+eXG4x1qE5ou14MeMeOafBvYrnemHyI+QP9TmdVzXgz/JcrhCafjS9Mi3XTt6oHBr
+Q7HGJLeSIxCCuPP4LlLGW+zDh7TG64grQTF+rje6nXz9KvPAaWJdgFSqRcYSo3ku
+SRTNwrs8z2dSXWCgca5pKoXi7xq1I4u9KaNAtA4R3dHsO0HiAT2A3402Dw14zgWf
+JVWbjz8UNW7KRR+s7eXncf6o+WygmVKqHpqt+nuNz1/oO8JmNTa9Pp47lzCq+cCF
+YqgLm2Nrdv6h
+-----END CERTIFICATE-----`;
+
+export const fakeRedisKey = `-----BEGIN PRIVATE KEY-----
+MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCjBQZ7IEowK4Oj
+QwWrxpLF1ugeFQ69QFShZLkqRkezXxtCd6Sde/pPliC/SFWyuxV13q8lrYapthDl
+gtq6gnbqXU0ZhtMhMfuNCj+XovTK1YDD/L4PT0mma4xyR1zgd6SUUNkgr/iBffwm
+jtceZPwqI4z5jj2WClJWKzLO3SQ0BoNDfNhh2Pxhmf7rDkV4a0eBZ4pWdUyDWmIM
+E43BuTxWRG+M9SGmEy/dZQ89ysJIPxiUvkhEcdCsOiuxGJt3qSUxaDv49MgbKKpt
+HXMk3tEsMpVyqy4TdZrsOCfkq0nb5QPi0u4s7zJ/Mqz1GW3bfbMVQTd7FF4vZy+Y
+5+jM5GadAgMBAAECggEAJ7eOt6rLSGchoEIw/IPZuIe+b63TtHoa5GNk1Y7f4yy1
+uIDrw060UnWSLuhRsMTx2pDRfU2EtI5eGXzDC5PDox/uK9z0TW8fCWLI0YnrOAvC
+Xn2SVKqNmBU115XZY/riRxxXeiZFVk86gq5kbMxPv3h/3UExcf+7xbCqpUmti1ry
+7IavyijiJhOptujt4nHGy9xNFnIm43BXzRwQke3fdhya6papmjWfq262gS1yHufD
+K7GVHFJeYHyeEN0jDyJoT+G7YQLtu0ufnwzj/MhvGHh3slj1SJRzEAweHMMyUYfO
+FNWzX1vulxD3mRPJVSCySUyH7+d98f0kYSn/GvJpgQKBgQDfDB1Vxwqq4G/0vM1a
+C6UZp5N5dWABTb1RI50ZnwLzbWKVeBcIR3oj56dtGiqXmdS+OLGlmNwqgW595/5k
+M5a1jTnpUL1JeE8aoNbwcuiBFeHmdglElmUJy67y/icpT27tamJFC77YGzERpa/h
+UF7yYwA9piitNy+7/HM+amanvQKBgQC7GpmXyW9yHc9ws/WE97TDacWOjOv4oTEU
+WRCqMv6ajOIn83YfIKBcF6DnMgITbX/aIsRkwIg33KqkUX4SMW8h1AXeBUineAD4
+6n1TtR0ptJ3dMnYE+gPDIFMbx0+Rx1ES2k82XS4DWN7R/4+7srSPH0P8gJRxFg2A
+0UdV9Ju4YQKBgEG7nkGTQS+OqS/lHFe3KtberfWTg9GeiXaKGlhcpk/7IpyOIauM
+9Q/zy0G5/mdjLHFK3/+/htL4BgoQ/sWk9ntWvYRnCQHH9PgSAoYmNyMjwclba+vM
+rsYuQsbV49Cm2jgZrBBRH9MsYE+lFqo+N10TlBSXDVHO+8BY69WvIcW5AoGAEkwa
+ox5e2LETnTjsFLHIqqeIW1VqqijRTOUc3RgZj/GhGDkV3xtoszjYUmOwkkfODf4C
+aLvvVk8tHN6fTpYpAQzj+f9YSJBSwATmdq4qiO6R1ZTet8PfZFCf8AKAxIfSZN6W
+ioF4Q3mIaM7uNnPWdnyfQG0ulxSKA4PzzvMZ22ECgYB+2BSChU1b252g9h4FI9ow
+i4Hgbo5vM9/YyBgJbeguSV1u20FLDCL/lGUvX0KRd3VHHl9oJlPIhTraz+hsSQQw
+jx0xIeTeBt17mqOBonUUnG3PjkjJJM9iJzBHYcScpOvmt8DRXhepkYAn3kvzGgc6
+kQlVF2vg9UkJF+hw3nPohw==
+-----END PRIVATE KEY-----`;
+
+export const fakeEcdsaCert = `-----BEGIN CERTIFICATE-----
+MIICgTCCAiegAwIBAgIUDzH7VnDn2h0LDYTLYXY73Sfgj9gwCgYIKoZIzj0EAwIw
+gZQxCzAJBgNVBAYTAlVTMQ0wCwYDVQQIDARUZXN0MRAwDgYDVQQHDAdUZXN0aW5n
+MRUwEwYDVQQKDAxNb3JlIFRlc3RpbmcxEjAQBgNVBAsMCVRlc3QgQXdheTEaMBgG
+A1UEAwwRdGVzdC50ZXN0aW5nLnRlc3QxHTAbBgkqhkiG9w0BCQEWDnRlc3RAdGVz
+dC50ZXN0MCAXDTIzMDgzMTE1NTYzMloYDzMwMjMwMTAxMTU1NjMyWjCBlDELMAkG
+A1UEBhMCVVMxDTALBgNVBAgMBFRlc3QxEDAOBgNVBAcMB1Rlc3RpbmcxFTATBgNV
+BAoMDE1vcmUgVGVzdGluZzESMBAGA1UECwwJVGVzdCBBd2F5MRowGAYDVQQDDBF0
+ZXN0LnRlc3RpbmcudGVzdDEdMBsGCSqGSIb3DQEJARYOdGVzdEB0ZXN0LnRlc3Qw
+WTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASf/fJD2gj8rBSNXq6TzoYEMk0+Rrej
+GjhSIObvkXwVqpKI+tqm7QK4eZxzj+f4TJMpflTYrmRE7BUEOpgkyejko1MwUTAd
+BgNVHQ4EFgQUt8Hta0n2VgwJp1RODkeX/xFDFqQwHwYDVR0jBBgwFoAUt8Hta0n2
+VgwJp1RODkeX/xFDFqQwDwYDVR0TAQH/BAUwAwEB/zAKBggqhkjOPQQDAgNIADBF
+AiAAhlaG+MeAA6e+9/uRBqU3TvEyrVQXD0zN5g+ZQh+mnAIhAPoRebSCEPzgoCNi
+s6vyY48u1gEddWKwM6Uqcq1D1IT5
+-----END CERTIFICATE-----`;
+
+export const fakeEcdsaKey = `-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIKapnkaPsrqk4eSxfGKGpYW69E723vOHsvgXOK5h5GzKoAoGCCqGSM49
+AwEHoUQDQgAEn/3yQ9oI/KwUjV6uk86GBDJNPka3oxo4UiDm75F8FaqSiPrapu0C
+uHmcc4/n+EyTKX5U2K5kROwVBDqYJMno5A==
+-----END EC PRIVATE KEY-----`;

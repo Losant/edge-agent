@@ -1,0 +1,210 @@
+name: Upgrade Node.js Version
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Every Monday 9 AM UTC
+  workflow_dispatch:
+    inputs:
+      node_major_version:
+        description: 'Node major version to check for upgrades (defaults to the major in .node-version)'
+        required: false
+
+concurrency:
+  group: upgrade-node-pnpm
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+
+    steps:
+      - name: Check for existing upgrade PR
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COUNT=$(gh pr list \
+            --repo "${{ github.repository }}" \
+            --state open \
+            --json headRefName \
+            --jq '[.[] | select(.headRefName | startswith("automation/upgrade-node-pnpm-"))] | length')
+          if [ "$COUNT" != "0" ]; then
+            echo "Upgrade PR already open — skipping"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  upgrade:
+    needs: check
+    if: needs.check.outputs.skip == 'false'
+    runs-on: ubuntu-latest
+    # Runs package install scripts, so it gets a read-only token and no app token.
+    permissions:
+      contents: read
+    outputs:
+      current_node: ${{ steps.upgrade.outputs.current_node }}
+      current_pnpm: ${{ steps.upgrade.outputs.current_pnpm }}
+      new_node_version: ${{ steps.upgrade.outputs.new_node_version }}
+      new_pnpm: ${{ steps.upgrade.outputs.new_pnpm }}
+      notes: ${{ steps.upgrade.outputs.notes }}
+
+    steps:
+      # tag v6.0.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+
+      # tag v5.0.0
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+        with:
+          run_install: false
+
+      # tag v6.3.0
+      - name: Setup Node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+        with:
+          node-version-file: '.node-version'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile
+          (cd scripts && pnpm install --frozen-lockfile)
+
+      - name: Resolve Node major version
+        id: major
+        env:
+          NODE_MAJOR_INPUT: ${{ inputs.node_major_version }}
+        run: |
+          NODE_MAJOR="${NODE_MAJOR_INPUT:-$(cut -d. -f1 .node-version)}"
+          echo "node_major=${NODE_MAJOR#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Run Node upgrade
+        id: upgrade
+        uses: Losant/losant-vex-tools/auto-upgrade-node@main
+        with:
+          node_major_version: ${{ steps.major.outputs.node_major }}
+          project_dirs: 'scripts'
+
+      - name: Save upgrade diff
+        if: steps.upgrade.outputs.new_node_version != '' || steps.upgrade.outputs.new_pnpm != ''
+        run: git diff --binary > upgrade.patch
+
+      - name: Upload upgrade diff
+        if: steps.upgrade.outputs.new_node_version != '' || steps.upgrade.outputs.new_pnpm != ''
+        # tag v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: upgrade-patch
+          path: upgrade.patch
+          retention-days: 1
+
+  open-pr:
+    needs: upgrade
+    if: needs.upgrade.outputs.new_node_version != '' || needs.upgrade.outputs.new_pnpm != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      # Pushes and PRs made with GITHUB_TOKEN don't trigger other workflows, so the
+      # app token is what lets lint and tests run on the PR.
+      # tag v3.2.0
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
+        with:
+          app-id: 4830546
+          private-key: ${{ secrets.VEX_APP_PRIVATE_KEY }}
+          repositories: ${{ github.event.repository.name }}
+
+      # tag v6.0.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Download upgrade diff
+        # tag v4.3.0
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: upgrade-patch
+
+      - name: Apply upgrade diff
+        run: |
+          git apply upgrade.patch
+          rm upgrade.patch
+
+      - name: Configure git
+        run: |
+          git config user.email "automation@losant.com"
+          git config user.name "Losant Automation"
+
+      - name: Commit and push
+        env:
+          LATEST_NODE: ${{ needs.upgrade.outputs.new_node_version }}
+          NEW_PNPM: ${{ needs.upgrade.outputs.new_pnpm }}
+        run: |
+          BRANCH="automation/upgrade-node-pnpm-$(date -u +%Y%m%d)"
+          PARTS=()
+          [ -n "$LATEST_NODE" ] && PARTS+=("Node to $LATEST_NODE")
+          [ -n "$NEW_PNPM" ] && PARTS+=("pnpm to $NEW_PNPM")
+          TITLE="chore: upgrade ${PARTS[0]}${PARTS[1]:+ and ${PARTS[1]}}"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
+          echo "TITLE=$TITLE" >> "$GITHUB_ENV"
+
+          git push origin --delete "$BRANCH" || true
+          git checkout -b "$BRANCH"
+          git add .
+          git commit -m "$TITLE"
+          git push -u origin "$BRANCH"
+
+      - name: Open pull request
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          LATEST_NODE: ${{ needs.upgrade.outputs.new_node_version }}
+          CURRENT_NODE: ${{ needs.upgrade.outputs.current_node }}
+          CURRENT_PNPM: ${{ needs.upgrade.outputs.current_pnpm }}
+          NEW_PNPM: ${{ needs.upgrade.outputs.new_pnpm }}
+          NOTES: ${{ needs.upgrade.outputs.notes }}
+        run: |
+          # GitHub caps issue/PR bodies at 65536 characters; NOTES can carry
+          # raw failure output (build logs, etc.) that's unbounded in size.
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          MAX_NOTES_LENGTH=50000
+          if [ "${#NOTES}" -gt "$MAX_NOTES_LENGTH" ]; then
+            NOTES="${NOTES:0:$MAX_NOTES_LENGTH}
+
+          ... (truncated — see the full output in the run log: $RUN_URL)"
+          fi
+
+          {
+            echo "## Automated Node.js Version Upgrade"
+            echo
+            echo "| | Before | After |"
+            echo "|---|---|---|"
+            [ -n "$LATEST_NODE" ] && echo "| Node.js | \`$CURRENT_NODE\` | \`$LATEST_NODE\` |"
+            [ -n "$NEW_PNPM" ] && echo "| pnpm | \`$CURRENT_PNPM\` | \`$NEW_PNPM\` |"
+            if [ -n "$NOTES" ]; then
+              echo
+              echo "## Notes"
+              echo
+              echo "$NOTES"
+            fi
+            echo
+            echo "Review the lock file changes, run tests, and merge when ready."
+          } > pr-body.md
+
+          gh pr create \
+            --repo "${{ github.repository }}" \
+            --title "$TITLE" \
+            --body-file pr-body.md \
+            --base develop \
+            --head "$BRANCH"

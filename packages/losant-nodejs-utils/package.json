@@ -1,0 +1,52 @@
+{
+  "name": "losant-nodejs-utils",
+  "version": "2.7.0",
+  "license": "Apache-2.0",
+  "description": "Node.js-only shared utilities used by the Losant Gateway Edge Agent and workflow nodes",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Losant/edge-agent.git",
+    "directory": "packages/losant-nodejs-utils"
+  },
+  "type": "module",
+  "engines": {
+    "node": "24.22.1"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*.js": "./src/*.js",
+    "./test/*.js": "./test/*.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1153.0",
+    "@aws-sdk/lib-storage": "^3.1153.0",
+    "@aws-sdk/s3-presigned-post": "^3.1153.0",
+    "@aws-sdk/s3-request-presigner": "^3.1153.0",
+    "@azure/storage-blob": "12.27.0",
+    "@google-cloud/storage": "^7.22.0",
+    "axios": "^1.20.0",
+    "bson": "^7.3.3",
+    "csv-parse": "^7.0.3",
+    "csv-stringify": "^6.9.0",
+    "error": "^7.2.1",
+    "fast-jwt": "^6.3.5",
+    "fs-extra": "^11.4.1",
+    "is-base64": "^1.1.0",
+    "is-valid-domain": "^0.1.6",
+    "is-valid-hostname": "^1.0.2",
+    "mime-types": "^3.0.2",
+    "moment": "^2.31.0",
+    "nanoid": "^5.1.16",
+    "neoip": "^3.1.0",
+    "omnibelt": "^4.1.0",
+    "qs": "^6.16.1",
+    "semver": "^7.8.5",
+    "ssl-validator": "^5.0.0",
+    "zstreams": "^5.0.0"
+  },
+  "devDependencies": {
+    "@hapi/subtext": "8.1.1",
+    "@hapi/wreck": "^18.1.2",
+    "aedes": "^1.2.0"
+  }
+}

@@ -1,0 +1,5 @@
+export const ONE_MEGABYTE = 1024 * 1024;
+export const FIVE_MEGABYTES = 5 * ONE_MEGABYTE;
+export const TEN_MEGABYTES = 10 * ONE_MEGABYTE;
+export const ONE_GIGABYTE = 1024 * ONE_MEGABYTE;
+export const LARGE_TEXT_SIZE = 131072;
