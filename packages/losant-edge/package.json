@@ -40,7 +40,7 @@
     "losant-handlebars": "workspace:*",
     "losant-nodejs-utils": "workspace:*",
     "losant-nodes": "workspace:*",
-    "losant-rest": "github:Losant/losant-rest-js#v4.3.0",
+    "losant-rest": "github:Losant/losant-rest-js#v4.4.0",
     "losant-sandcastle": "workspace:*",
     "modbus-serial": "^8.0.25",
     "mqtt": "^4.3.8",
