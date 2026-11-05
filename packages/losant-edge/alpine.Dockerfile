@@ -1,6 +1,6 @@
 FROM node:26.13.0-alpine3.23 AS builder
 ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+ENV PATH="$PNPM_HOME/bin:$PATH"
 
 RUN apk upgrade -U \
   && apk add --no-cache git openssl openssh make gcc g++ python3 py3-setuptools linux-headers libxml2-utils
@@ -18,7 +18,7 @@ COPY ./packages/losant-edge ./packages/losant-edge
 COPY LICENSE ./packages/losant-edge
 ARG TARGETARCH
 COPY ./scripts ./scripts
-RUN corepack install && corepack enable
+RUN npx get-pnpm
 ENV PNPM_CONFIG_PYTHON_EXECUTABLE=/usr/bin/python3
 RUN pnpm deploy \
   --filter-prod='./packages/losant-edge' \

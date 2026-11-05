@@ -3,7 +3,10 @@ FROM node:26.13.0-trixie
 ENV CI="true" \
   PNPM_HOME="/pnpm"
 
-ENV PATH="$PNPM_HOME:$PATH"
+ENV PATH="$PNPM_HOME/bin:$PATH"
+ENV PNPM_VERSION=12.16.1
+
+RUN npx get-pnpm
 
 RUN mkdir /root/.config \
   && apt-get update \
@@ -11,7 +14,3 @@ RUN mkdir /root/.config \
     python3 python3-setuptools build-essential libssl-dev libxml2-utils socat \
   && rm -rf /var/lib/apt/lists/*
 
-# Installs the pnpm version pinned by packageManager in the root package.json.
-# Running pnpm once fetches its binary now, so test runs don't download it.
-COPY package.json /tmp/pnpm-version/package.json
-RUN cd /tmp/pnpm-version && corepack install && corepack enable && pnpm --version && rm -rf /tmp/pnpm-version

@@ -33,7 +33,7 @@ RUN NODE_VERSION=$(python3 -c "import json; print(json.load(open('./package.json
     curl -fsSL https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${ARCH}.tar.xz \
     | tar -xJ -C /usr/local --strip-components=1
 
-RUN corepack install && corepack enable
+RUN npx get-pnpm
 ENV PNPM_CONFIG_PYTHON_EXECUTABLE=/usr/bin/python3
 RUN pnpm deploy \
   --filter-prod='./packages/losant-edge' \
