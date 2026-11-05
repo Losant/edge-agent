@@ -1,4 +1,4 @@
-FROM node:24.22.1-alpine3.23 AS builder
+FROM node:26.13.0-alpine3.23 AS builder
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
@@ -37,7 +37,7 @@ RUN pnpm rebuild classic-level
 RUN rm -rf pnpm-lock.yaml pnpm-workspace.yaml scripts
 
 # ok, now that things are built and installed, lets make the actual docker image
-FROM node:24.22.1-alpine3.23
+FROM node:26.13.0-alpine3.23
 ARG ROLLBAR_KEY
 VOLUME /data
 EXPOSE $WEBSERVER_PORT_DEFAULT
