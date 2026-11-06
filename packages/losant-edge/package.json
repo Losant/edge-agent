@@ -53,7 +53,7 @@
     "omnibelt": "^4.1.0",
     "pem": "^1.14.8",
     "rollbar": "^3.1.0",
-    "serialport": "^13.0.0",
+    "serialport-rs": "^0.7.1",
     "st-ethernet-ip": "^2.7.5",
     "tcomb": "^3.2.29",
     "tcomb-validation": "^3.4.1",

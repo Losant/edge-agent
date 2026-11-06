@@ -1,4 +1,4 @@
-import { SerialPort } from 'serialport';
+import { SerialPort } from 'serialport-rs';
 import * as payloadHelper from 'losant-handlebars';
 import errors from 'losant-nodejs-utils/src/errors.js';
 import { checkEncoding } from '../utils.js';
