@@ -17,26 +17,19 @@ RUN zypper refresh && zypper up -y --no-recommends \
 RUN mkdir -p /var/build && mkdir -p /var/output
 WORKDIR /var/build
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.cjs ./
-COPY ./patches ./patches
-COPY ./packages/losant-nodejs-utils ./packages/losant-nodejs-utils
-COPY ./packages/losant-handlebars ./packages/losant-handlebars
-COPY ./packages/losant-nodes ./packages/losant-nodes
-COPY ./packages/losant-sandcastle ./packages/losant-sandcastle
-COPY ./packages/losant-edge ./packages/losant-edge
+COPY ./ ./
 COPY LICENSE ./packages/losant-edge
 ARG TARGETARCH
-COPY ./scripts ./scripts
 
 RUN NODE_VERSION=$(python3 -c "import json; print(json.load(open('./package.json'))['engines']['node'])") && \
     ARCH=$(uname -m | sed 's/x86_64/x64/;s/aarch64/arm64/') && \
     curl -fsSL https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${ARCH}.tar.xz \
     | tar -xJ -C /usr/local --strip-components=1
 
-RUN corepack install && corepack enable
+RUN npx get-pnpm
 ENV PNPM_CONFIG_PYTHON_EXECUTABLE=/usr/bin/python3
 RUN pnpm deploy \
-  --filter-prod='./packages/losant-edge' \
+  --filter-prod=losant-edge \
   --os=linux \
   --cpu=$([ "$TARGETARCH" = "arm64" ] && echo arm64 || echo x64) \
   --libc=glibc \
@@ -72,7 +65,7 @@ ENV CONF_PATH_DEFAULT="/etc/losant/losant-edge-agent-config.toml" \
   NODEOPCUA_LOG_LEVEL="0" \
   SNOWFLAKE_DISABLE_PLATFORM_DETECTION="true" \
   PATH="/home/losant/.config/npm/bin:${PATH}" \
-  NODE_PATH="/home/losant/.config/yarn/global/node_modules:/home/losant/.config/npm/lib/node_modules:${NODE_PATH}" \
+  NODE_PATH="/home/losant/.config/yarn/global/node_modules:/home/losant/.config/npm/lib/node_modules" \
   ROLLBAR_KEY="${ROLLBAR_KEY}"
 
 # http://label-schema.org/rc1/

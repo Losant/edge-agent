@@ -6,7 +6,7 @@ import { resolve as pathResolve } from 'node:path';
 import fs from 'fs-extra';
 import { resetTo, clampPositiveEnv } from './utils.js';
 import t from 'tcomb';
-import { SerialPort, DelimiterParser, ByteLengthParser } from 'serialport';
+import { SerialPort, DelimiterParser, ByteLengthParser } from 'serialport-rs';
 import logger from './logger/index.js';
 import FiredTrigger from './types/fired-trigger.js';
 import SerialConfigs from './types/serial-configs.js';

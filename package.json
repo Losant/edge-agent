@@ -5,9 +5,9 @@
   "version": "2.7.0",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@12.14.0",
+  "packageManager": "pnpm@12.16.1",
   "engines": {
-    "node": "24.22.1"
+    "node": "26.13.0"
   },
   "repository": {
     "type": "git",
@@ -70,7 +70,7 @@
     "eslint": "9.39.4",
     "husky": "9.1.7",
     "lint-staged": "^16.4.0",
-    "mocha": "^11.8.0",
+    "mocha": "^12.0.3",
     "nock": "^14.0.17",
     "should": "13.2.3",
     "sinon": "^21.1.2",

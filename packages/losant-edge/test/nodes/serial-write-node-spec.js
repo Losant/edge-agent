@@ -78,7 +78,7 @@ describe('SerialWriteNode', () => {
     });
     const result = await node.run({}, { path: socat.serialPathSideA });
     result[1].result.should.deepEqual({
-      error: `Error: No such file or directory, cannot open /tmp${socat.serialPathSideA}`
+      error: 'No such file or directory'
     });
     socat.receivedSideB().should.deepEqual('');
   }).timeout(20000);

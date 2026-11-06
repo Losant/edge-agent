@@ -2,7 +2,7 @@ import t from 'tcomb';
 import { watch as chokidarWatch } from 'chokidar';
 import logger from './logger/index.js';
 import fs from 'fs-extra';
-import { DelimiterParser, ByteLengthParser } from 'serialport';
+import { DelimiterParser, ByteLengthParser } from 'serialport-rs';
 import unescapeStr from 'losant-nodejs-utils/src/utils/unescape-str.js';
 import { resolve as pathResolve } from 'node:path';
 import { resetTo, clampPositiveEnv } from './utils.js';
