@@ -65,7 +65,7 @@ LABEL maintainer="support@losant.com" \
   org.label-schema.schema-version="2.7.0" \
   org.label-schema.name="Losant Gateway Edge Agent" \
   org.label-schema.url="https://www.losant.com" \
-  org.label-schema.vendor="Losant IoT Inc." \
+  org.label-schema.vendor="SUSE" \
   org.label-schema.description="The Losant Gateway Edge Agent is a service that's installed on every Losant Edge Compute device to manage the deployment and execution of edge workflows."
 
 RUN apk upgrade -U \
