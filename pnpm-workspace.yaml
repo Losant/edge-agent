@@ -13,7 +13,7 @@ verifyDepsBeforeRun: false
 
 overrides:
   'diff@^5.0.2': ^8.0.3 # https://github.com/advisories/GHSA-73rr-hh4g-fpgx
-  'modbus-serial>serialport': ^13.0.0 # keep installed serialport version matching modbus-serial's installed version
+  'modbus-serial>serialport': "npm:serialport-rs@^0.7.1" # serialport is invalid on node26
   'mocha>serialize-javascript': ^7.0.2 # fixes GHSA-5c6j-r48x-rmvq
   'node-opcua-address-space>lodash': ^4.18.1 # fixes CVE-2026-2950 and CVE-2026-4800
   'node-opcua-server>lodash': ^4.18.1 # fixes CVE-2026-2950 and CVE-2026-4800
@@ -43,3 +43,6 @@ allowBuilds:
 
 patchedDependencies:
   csv-parse@7.0.3: patches/csv-parse@7.0.3.patch
+permissions:
+  dotenv:
+    skills: false

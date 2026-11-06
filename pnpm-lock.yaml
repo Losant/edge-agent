@@ -164,7 +164,7 @@ settings:
 
 overrides:
   diff@^5.0.2: ^8.0.3
-  modbus-serial>serialport: ^13.0.0
+  modbus-serial>serialport: npm:serialport-rs@^0.7.1
   mocha>serialize-javascript: ^7.0.2
   node-opcua-address-space>lodash: ^4.18.1
   node-opcua-server>lodash: ^4.18.1
@@ -4554,6 +4554,10 @@ packages:
     resolution: {integrity: sha512-FqlEuoTq/zRmA4Lg6aOqyH3lCHbUtCB0bmHCeFniX2GBdDqMJM3FwdvEhlE5Pim1dlt2FfBdVPmUNNiGhhKqpw==}
     engines: {node: '>=20.0.0'}
 
+  serialport-rs@0.7.1:
+    resolution: {integrity: sha512-dUs22R85cHxB6csB9mf+5d9POBV/qVOVry8MSZXB4Jf+6l6EuordAmvWHNOVlpAQOEuxQhWWYZ3p6kpdv2IcpQ==}
+    engines: {node: '>=20'}
+
   serialport@13.0.0:
     resolution: {integrity: sha512-PHpnTd8isMGPfFTZNCzOZp9m4mAJSNWle9Jxu6BPTcWq7YXl5qN7tp8Sgn0h+WIGcD6JFz5QDgixC2s4VW7vzg==}
     engines: {node: '>=20.0.0'}
@@ -8878,7 +8882,7 @@ snapshots:
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
     optionalDependencies:
-      serialport: 13.0.0(supports-color@8.1.1)
+      serialport: serialport-rs@0.7.1
     transitivePeerDependencies:
       - supports-color
 
@@ -10490,6 +10494,9 @@ snapshots:
   sequin@0.1.1: {}
 
   serialize-javascript@7.1.4: {}
+
+  serialport-rs@0.7.1:
+    optional: true
 
   serialport@13.0.0(supports-color@8.1.1):
     dependencies:

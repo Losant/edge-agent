@@ -556,7 +556,7 @@ const serialOnlyTests = (serverWrapper) => {
     const result = await node.run({}, { path: socat.serialPathSideB });
     result[1].destination.should.deepEqual({
       errors: [ {
-        message: `Error: No such file or directory, cannot open /tmp${socat.serialPathSideB}`,
+        message: 'No such file or directory',
         type: 'MODBUS_READ_ERROR'
       }]
     });
