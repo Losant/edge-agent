@@ -2,8 +2,6 @@ import { levelManager } from '../common.js';
 import { defer, noop } from 'omnibelt';
 import fs from 'fs-extra';
 import path from 'node:path';
-import Stream from 'node:stream';
-import { buffer as streamToBuffer } from 'node:stream/consumers';
 import NodeRunner from '../../src/node-runner.js';
 import HttpResponseNode from '../../src/nodes/http-response-node.js';
 
@@ -74,7 +72,7 @@ describe('HttpResponseNode', () => {
       const deferred = defer();
       const context = contextify({
         originalPayload: { data: { replyId: 'fakeId' } },
-        flowHttpResponse: (replyId, response) => deferred.resolve(response)
+        flowHttpResponse: (replyId, response, options) => deferred.resolve({ response, options })
       });
       return { context, deferred };
     };
@@ -89,10 +87,7 @@ describe('HttpResponseNode', () => {
       await node.run(context, { filename: FIXTURE_PATH });
       const response = await deferred.promise;
 
-      const expected = await fs.readFile(FIXTURE_PATH);
-      response.body.should.be.an.instanceOf(Stream.Readable);
-      const actual = await streamToBuffer(response.body);
-      Buffer.compare(actual, expected).should.equal(0);
+      response.options.bodyPath.should.equal(path.join('/private', FIXTURE_PATH));
     });
 
     it('should throw if the file does not exist', async () => {

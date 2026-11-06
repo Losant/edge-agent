@@ -335,6 +335,31 @@ describe('Edge Webserver', function() {
     Buffer.compare(Buffer.from(response.data), expected).should.equal(0);
   });
 
+  it('should convert a bodyPath into a stream and use it as the response body', async () => {
+    webserver = Webserver({ port: 45454 });
+    const fixturePath = path.resolve(import.meta.dirname, '__fixtures__', 'weights.bin');
+    const expected = await fs.readFile(fixturePath);
+    await webserver.initialize([{ triggerId: 'request' }], async (triggerFire) => {
+      await sleep(0);
+      webserver.flowResponse(triggerFire.payload.data.replyId, {
+        headers: [{ key: 'content-type', value: 'application/octet-stream' }],
+        responseCode: 200
+      }, { bodyPath: fixturePath });
+    });
+
+    const response = await axios({
+      url: 'http://localhost:45454/bin',
+      method: 'get',
+      responseType: 'arraybuffer',
+      headers: {
+        'Accept-Encoding': false
+      }
+    });
+
+    response.status.should.deepEqual(200);
+    Buffer.compare(Buffer.from(response.data), expected).should.equal(0);
+  });
+
   it('should error with bad basic auth', async () => {
     webserver = Webserver({
       port: 45455,

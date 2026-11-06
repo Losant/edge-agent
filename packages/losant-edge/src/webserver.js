@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { Readable } from 'node:stream';
+import fs from 'fs-extra';
 import Hapi from '@hapi/hapi';
 import call from '@hapi/call';
 import rollbar from './rollbar.js';
@@ -299,9 +300,14 @@ const Webserver = (webserverConf) => {
     requestTriggerMap = triggerConfigsToMap(requestTriggerConfigs);
   };
 
-  const flowResponse = (replyId, response) => {
+  const flowResponse = (replyId, response, { bodyPath } = {}) => {
     const resolver = awaitingReply.get(replyId);
-    if (resolver) { resolver(response); }
+    if (resolver) {
+      if (bodyPath) {
+        response.body = fs.createReadStream(bodyPath);
+      }
+      resolver(response);
+    }
   };
 
   const shutdown = async () => {

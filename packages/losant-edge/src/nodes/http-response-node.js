@@ -1,7 +1,5 @@
-import fs from 'fs-extra';
 import * as payloadHelper from 'losant-handlebars';
 import { is, isNilOrEmpty, mapRejectNil } from 'omnibelt';
-
 import { mapRejectNilKeyValTemplates } from '../utils.js';
 
 class HttpResponseNode {
@@ -44,13 +42,13 @@ class HttpResponseNode {
     const replyId = payloadHelper.lookup('data.replyId', context.originalPayload);
     if (isNilOrEmpty(replyId)) { return [this.outputIds, payload]; }
 
-    let body = '';
+    let body = '', bodyPath;
     if (this.bodyTemplateType === 'payload') {
       body = payload;
     } else if (this.bodyTemplateType === 'diskPath') {
       const renderedPath = payloadHelper.renderToString(this.bodyTemplate, payload);
       const { realPath } = await context.diskUtils.guardFileReadPath(renderedPath);
-      body = fs.createReadStream(realPath);
+      bodyPath = realPath;
     } else if (this.bodyTemplate) {
       if (this.bodyTemplateType === 'path') {
         body = payloadHelper.lookup(this.bodyTemplate, payload);
@@ -86,8 +84,7 @@ class HttpResponseNode {
     let responseCode = parseInt(payloadHelper.render(this.responseCodeTemplate, payload), 10);
     if (!isFinite(responseCode)) { responseCode = 200; }
 
-    const response = { body, headers, responseCode, cookies };
-    context.flowHttpResponse(replyId, response);
+    context.flowHttpResponse(replyId, { body, headers, responseCode, cookies }, { bodyPath });
 
     return [this.outputIds, payload];
   }
