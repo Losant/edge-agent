@@ -1,16 +1,13 @@
 import * as payloadHelper from 'losant-handlebars';
 import { is, isNilOrEmpty, mapRejectNil } from 'omnibelt';
-
 import { mapRejectNilKeyValTemplates } from '../utils.js';
-
-const TEMPLATE_TYPES = new Set(['string', 'path', 'payload']);
 
 class HttpResponseNode {
 
   /* Example Config:
   {
     bodyTemplate: <String - Optional: template for the response body. Used when bodyTemplateType is string or path. Empty body when omitted>,
-    bodyTemplateType: <String - Optional: how to interpret bodyTemplate (string|path|payload). Default string. string renders it as a template, path sends the value at that payload path, payload sends the entire payload (bodyTemplate is ignored). Non-string bodies are JSON-serialized>,
+    bodyTemplateType: <String - Optional: how to interpret bodyTemplate (string|path|payload|diskPath). Default string. string renders it as a template, path sends the value at that payload path, payload sends the entire payload (bodyTemplate is ignored), diskPath streams the file at bodyTemplate as the response body. Non-string, non-diskPath bodies are JSON-serialized>,
     headerInfo: [
       0 or more of:
       { keyTemplate: <String - Required: template for header key name>,
@@ -35,7 +32,7 @@ class HttpResponseNode {
     this.id = id;
     this.outputIds = outputIds;
     this.bodyTemplate = config.bodyTemplate;
-    this.bodyTemplateType = TEMPLATE_TYPES.has(config.bodyTemplateType) ? config.bodyTemplateType : 'string';
+    this.bodyTemplateType = config.bodyTemplateType || 'string';
     this.headerInfo = config.headerInfo || [];
     this.cookieInfo = config.cookieInfo || [];
     this.responseCodeTemplate = config.responseCodeTemplate;
@@ -45,9 +42,13 @@ class HttpResponseNode {
     const replyId = payloadHelper.lookup('data.replyId', context.originalPayload);
     if (isNilOrEmpty(replyId)) { return [this.outputIds, payload]; }
 
-    let body = '';
+    let body = '', bodyPath;
     if (this.bodyTemplateType === 'payload') {
       body = payload;
+    } else if (this.bodyTemplateType === 'diskPath') {
+      const renderedPath = payloadHelper.renderToString(this.bodyTemplate, payload);
+      const { realPath } = await context.diskUtils.guardFileReadPath(renderedPath);
+      bodyPath = realPath;
     } else if (this.bodyTemplate) {
       if (this.bodyTemplateType === 'path') {
         body = payloadHelper.lookup(this.bodyTemplate, payload);
@@ -55,7 +56,9 @@ class HttpResponseNode {
         body = payloadHelper.render(this.bodyTemplate, payload);
       }
     }
-    if (!is(String, body)) { body = JSON.stringify(body) || ''; }
+    if (this.bodyTemplateType !== 'diskPath' && !is(String, body)) {
+      body = JSON.stringify(body) || '';
+    }
     const headers = mapRejectNilKeyValTemplates(this.headerInfo, payload);
 
     const cookies = mapRejectNil(({ nameTemplate, valueTemplate, maxAgeTemplate, pathTemplate }) => {
@@ -81,8 +84,7 @@ class HttpResponseNode {
     let responseCode = parseInt(payloadHelper.render(this.responseCodeTemplate, payload), 10);
     if (!isFinite(responseCode)) { responseCode = 200; }
 
-    const response = { body, headers, responseCode, cookies };
-    context.flowHttpResponse(replyId, response);
+    context.flowHttpResponse(replyId, { body, headers, responseCode, cookies }, { bodyPath });
 
     return [this.outputIds, payload];
   }
