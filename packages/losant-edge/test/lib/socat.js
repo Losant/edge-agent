@@ -2,7 +2,7 @@ import childProcess from 'child_process';
 import fs from 'fs-extra';
 import { defer, noop, sleep } from 'omnibelt';
 import { DEFAULT_SERIAL_CONFIG } from '../../src/constants.js';
-import { SerialPort } from 'serialport';
+import { SerialPort } from 'serialport-rs';
 import { slowWriteToPort } from '../../src/lib/serial-utils.js';
 
 const openPort = async (path, config) => {

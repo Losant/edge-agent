@@ -1,6 +1,6 @@
-FROM node:24.22.1-alpine3.23 AS builder
+FROM node:26.13.0-alpine3.23 AS builder
 ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+ENV PATH="$PNPM_HOME/bin:$PATH"
 
 RUN apk upgrade -U \
   && apk add --no-cache git openssl openssh make gcc g++ python3 py3-setuptools linux-headers libxml2-utils
@@ -8,20 +8,14 @@ RUN apk upgrade -U \
 RUN mkdir -p /var/build && mkdir -p /var/output
 WORKDIR /var/build
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.cjs ./
-COPY ./patches ./patches
-COPY ./packages/losant-nodejs-utils ./packages/losant-nodejs-utils
-COPY ./packages/losant-handlebars ./packages/losant-handlebars
-COPY ./packages/losant-nodes ./packages/losant-nodes
-COPY ./packages/losant-sandcastle ./packages/losant-sandcastle
-COPY ./packages/losant-edge ./packages/losant-edge
+COPY ./ ./
 COPY LICENSE ./packages/losant-edge
 ARG TARGETARCH
-COPY ./scripts ./scripts
-RUN corepack install && corepack enable
+
+RUN npx get-pnpm
 ENV PNPM_CONFIG_PYTHON_EXECUTABLE=/usr/bin/python3
 RUN pnpm deploy \
-  --filter-prod='./packages/losant-edge' \
+  --filter-prod=losant-edge \
   --os=linux \
   --cpu=$([ "$TARGETARCH" = "arm64" ] && echo arm64 || echo x64) \
   --libc=musl \
@@ -37,7 +31,7 @@ RUN pnpm rebuild classic-level
 RUN rm -rf pnpm-lock.yaml pnpm-workspace.yaml scripts
 
 # ok, now that things are built and installed, lets make the actual docker image
-FROM node:24.22.1-alpine3.23
+FROM node:26.13.0-alpine3.23
 ARG ROLLBAR_KEY
 VOLUME /data
 EXPOSE $WEBSERVER_PORT_DEFAULT
@@ -57,7 +51,7 @@ ENV CONF_PATH_DEFAULT="/etc/losant/losant-edge-agent-config.toml" \
   NODEOPCUA_LOG_LEVEL="0" \
   SNOWFLAKE_DISABLE_PLATFORM_DETECTION="true" \
   PATH="/home/losant/.config/npm/bin:${PATH}" \
-  NODE_PATH="/home/losant/.config/yarn/global/node_modules:/home/losant/.config/npm/lib/node_modules:${NODE_PATH}" \
+  NODE_PATH="/home/losant/.config/yarn/global/node_modules:/home/losant/.config/npm/lib/node_modules" \
   ROLLBAR_KEY="${ROLLBAR_KEY}"
 
 # http://label-schema.org/rc1/
