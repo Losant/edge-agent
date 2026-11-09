@@ -87,7 +87,7 @@ describe('HttpResponseNode', () => {
       await node.run(context, { filename: FIXTURE_PATH });
       const response = await deferred.promise;
 
-      response.options.bodyPath.should.equal(path.join('/private', FIXTURE_PATH));
+      response.options.bodyPath.should.equal(await fs.realpath(FIXTURE_PATH));
     });
 
     it('should throw if the file does not exist', async () => {
