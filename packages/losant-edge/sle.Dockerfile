@@ -1,6 +1,6 @@
 FROM registry.suse.com/bci/bci-base:16.0 AS builder
 ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+ENV PATH="$PNPM_HOME/bin:$PATH"
 ENV npm_config_python=python3
 ENV CC=gcc
 ENV CXX=g++
