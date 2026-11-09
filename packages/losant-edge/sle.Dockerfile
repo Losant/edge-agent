@@ -78,6 +78,7 @@ LABEL maintainer="support@losant.com" \
 
 RUN zypper refresh
 RUN zypper up -y --no-recommends
+RUN zypper install -y --no-recommends libatomic1
 ENV TINI_VERSION=v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static /tini
 RUN chmod +x /tini
