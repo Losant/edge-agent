@@ -75,7 +75,7 @@ class CSVDecodeNode {
       CSVOpts.recordDelimiter = recordDelimiterTemp;
     }
 
-    let result = {};
+    let result;
     try {
       const data = payloadHelper.lookup(this.source, payload);
       if (typeof data !== 'string') {
@@ -90,7 +90,7 @@ class CSVDecodeNode {
       result = { error: { message: e.message } };
       if (e.type) { result.error.type = e.type; }
     }
-    payload = payloadHelper.set(this.destination, result, payload);
+    payload = payloadHelper.set(this.destination, result || {}, payload);
     return [this.outputIds, payload];
   }
 }

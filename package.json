@@ -66,12 +66,12 @@
     ]
   },
   "devDependencies": {
-    "@losant/eslint-config-losant": "2.1.0",
-    "eslint": "10.14.0",
-    "husky": "9.1.7",
+    "@losant/eslint-config-losant": "github:Losant/eslint-config-losant#housekeeping-vexing",
+    "eslint": "^10.14.0",
+    "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
     "mocha": "^12.0.3",
-    "nock": "^14.0.17",
+    "nock": "^15.0.6",
     "should": "13.2.3",
     "sinon": "^22.1.0",
     "timekeeper": "^2.3.1"

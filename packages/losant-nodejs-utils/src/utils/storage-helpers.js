@@ -182,7 +182,7 @@ const _uploadFileInternal = async (pFuncUpload, localPath, bucket, filename, con
     return await pFuncUpload(bucket, filename, localPath, contentType, opts);
   } catch (e) {
     if (retryCount < RETRY_UPLOAD_COUNT) {
-      return _uploadFileInternal(pFuncUpload, localPath, bucket, filename, contentType, opts, ++retryCount);
+      return _uploadFileInternal(pFuncUpload, localPath, bucket, filename, contentType, opts, retryCount + 1);
     } else {
       throw e;
     }

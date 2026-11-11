@@ -189,12 +189,12 @@ const AwsWrapper = (config = {}) => {
     } catch (err) {
       const sErr = transformError(err);
       if (sErr.isNotFoundError) {
-        return null;
+        return data;
       }
       throw sErr;
     }
     if (returnAll) {
-      return data;
+      return data || data;
     }
     return {
       etag: data?.ETag && data.ETag.replace(/"/g, '') || undefined,

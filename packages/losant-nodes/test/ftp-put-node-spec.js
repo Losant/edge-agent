@@ -43,6 +43,10 @@ describe('FtpPutNode', () => {
 
   describe('FTP', () => {
     beforeEach(async () => {
+      // ftp-srv and basic-ftp use real TCP/TLS sockets. nock's active
+      // interceptor patches net.Socket/tls.TLSSocket globally, which crashes
+      // on these non-HTTP connections, so turn it off for this suite.
+      nock.restore();
       const log = { info: noop, error: noop, trace: noop, debug: noop };
       log.child = () => { return log; };
       server = new FtpSrv({
@@ -74,6 +78,11 @@ describe('FtpPutNode', () => {
     });
 
     it('should PUT url content over FTP', async () => {
+      // this test mocks a real HTTP fetch, unlike the rest of this suite,
+      // so re-enable nock's interceptor that the FTP beforeEach turned off.
+      if (!nock.isActive()) {
+        nock.activate();
+      }
       nock('https://example.com:443', { encodedQueryParams: true })
         .get('/')
         .reply(200, '<!doctype html>\n<html>\n<head>\n    <title>Example Domain</title>\n\n    <meta charset="utf-8" />\n    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />\n    <meta name="viewport" content="width=device-width, initial-scale=1" />\n    <style type="text/css">\n    body {\n        background-color: #f0f0f2;\n        margin: 0;\n        padding: 0;\n        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;\n        \n    }\n    div {\n        width: 600px;\n        margin: 5em auto;\n        padding: 2em;\n        background-color: #fdfdff;\n        border-radius: 0.5em;\n        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);\n    }\n    a:link, a:visited {\n        color: #38488f;\n        text-decoration: none;\n    }\n    @media (max-width: 700px) {\n        div {\n            margin: 0 auto;\n            width: auto;\n        }\n    }\n    </style>    \n</head>\n\n<body>\n<div>\n    <h1>Example Domain</h1>\n    <p>This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission.</p>\n    <p><a href="https://www.iana.org/domains/example">More information...</a></p>\n</div>\n</body>\n</html>\n');
