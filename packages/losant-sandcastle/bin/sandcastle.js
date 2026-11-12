@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers'; // eslint-disable-line import/no-unresolved
+import { hideBin } from 'yargs/helpers';
 import { noop } from 'omnibelt';
 import { pathToFileURL } from 'node:url';
 

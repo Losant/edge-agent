@@ -16,7 +16,8 @@ const standardHeaders = {
   'content-security-policy': 'default-src \'none\'',
   'cache-control': 'no-cache, no-store, must-revalidate',
   'pragma': 'no-cache',
-  'connection': 'close'
+  'connection': 'keep-alive',
+  'keep-alive': 'timeout=5'
 };
 
 let webserver;
@@ -63,7 +64,7 @@ describe('Edge Webserver', function() {
             'accept': 'application/json, text/plain, */*',
             'user-agent': triggers[0].payload.data.headers['user-agent'],
             'host': 'localhost:45454',
-            'connection': 'close'
+            'connection': 'keep-alive'
           },
           query: { hi: 'bye' },
           body: undefined,
@@ -110,7 +111,7 @@ describe('Edge Webserver', function() {
         'accept': 'application/json, text/plain, */*',
         'user-agent': triggers[0].payload.data.headers['user-agent'],
         'host': 'localhost:45454',
-        'connection': 'close'
+        'connection': 'keep-alive'
       },
       query: {},
       body: undefined,
@@ -193,7 +194,7 @@ describe('Edge Webserver', function() {
               'accept': 'application/json, text/plain, */*',
               'user-agent': triggers[0].payload.data.headers['user-agent'],
               'host': 'localhost:45454',
-              'connection': 'close'
+              'connection': 'keep-alive'
             },
             query: {},
             body: undefined,
@@ -259,7 +260,7 @@ describe('Edge Webserver', function() {
             'user-agent': triggers[0].payload.data.headers['user-agent'],
             'content-length': '15',
             'host': 'localhost:45454',
-            'connection': 'close'
+            'connection': 'keep-alive'
           },
           query: {},
           body: { blah: 'blah' },
@@ -460,7 +461,7 @@ describe('Edge Webserver', function() {
             'accept': 'application/json, text/plain, */*',
             'user-agent': triggers[0].payload.data.headers['user-agent'],
             'host': 'localhost:45454',
-            'connection': 'close'
+            'connection': 'keep-alive'
           },
           query: { hi: 'SSL' },
           body: undefined,

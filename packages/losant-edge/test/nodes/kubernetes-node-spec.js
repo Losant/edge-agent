@@ -4,7 +4,7 @@ import https from 'node:https';
 import { Readable } from 'node:stream';
 import { text } from 'node:stream/consumers';
 import fs from 'fs-extra';
-import { mapP } from 'omnibelt';
+import { mapP, sleep } from 'omnibelt';
 import { nock, sinon, should, restoreEnv } from '../common.js';
 import errors from 'losant-nodejs-utils/src/errors.js';
 import { PACKAGE_ROOT_DIR } from '../../src/constants.js';
@@ -36,10 +36,36 @@ import KubernetesNode, {
 } from '../../src/nodes/kubernetes-node.js';
 
 const OUTPUT_IDS = [['out']];
-const SERVER_URL = 'https://k8s.example.com:6443';
+const SERVER_URL = 'https://example.com';
 const TOKEN = 'test-bearer-token-12345';
 
 describe('KubernetesNode', () => {
+  // nock 15 (mswjs/interceptors) races a real background connection against
+  // every mocked request. For a nonexistent hostname like k8s.example.com,
+  // that real connection's DNS lookup can fail (or succeed/hang, depending on
+  // environment) at an inconsistent speed relative to nock's in-process mock,
+  // which under full-suite load sometimes wins the race or blocks on it.
+  // Resolving the fake hostname straight to loopback makes that background
+  // connection attempt fail near-instantly (ECONNREFUSED, nothing listening),
+  // instead of a slow/flaky real DNS round trip.
+  // const originalDnsLookup = dns.lookup;
+  // before(() => {
+  //   dns.lookup = (hostname, ...rest) => {
+  //     const callback = rest[rest.length - 1];
+  //     if (hostname === 'k8s.example.com') {
+  //       const options = rest.length > 1 ? rest[0] : {};
+  //       if (options && options.all) {
+  //         return process.nextTick(() => callback(null, [{ address: '127.0.0.1', family: 4 }]));
+  //       }
+  //       return process.nextTick(() => callback(null, '127.0.0.1', 4));
+  //     }
+  //     return originalDnsLookup.call(dns, hostname, ...rest);
+  //   };
+  // });
+  // after(() => {
+  //   dns.lookup = originalDnsLookup;
+  // });
+
   const defaultContext = {
     diskUtils: { guardPath, loadGuardedFile },
     externalTimeout: 30000
@@ -884,7 +910,8 @@ data:
         badheaders: ['content-type']
       })
         .get('/api/v1/pods')
-        .reply(200, function(uri, requestBody) {
+        .reply(200, async function(req) {
+          const requestBody = await req.text();
           requestBody.should.equal('');
           return { items: [] };
         });
@@ -893,7 +920,8 @@ data:
         badheaders: ['content-type']
       })
         .delete('/api/v1/namespaces/default/pods/my-pod')
-        .reply(200, function(uri, requestBody) {
+        .reply(200, async function(req) {
+          const requestBody = await req.text();
           requestBody.should.equal('');
           return { status: 'Success' };
         });
@@ -1359,7 +1387,8 @@ data:
         badheaders: ['content-type']
       })
         .intercept('/apis/custom.metrics.k8s.io/v1beta1/namespaces/default/pods', 'GET')
-        .reply(200, function(uri, requestBody) {
+        .reply(200, async function(req) {
+          const requestBody = await req.text();
           requestBody.should.equal('');
           return { items: [] };
         });
@@ -1368,7 +1397,8 @@ data:
         badheaders: ['content-type']
       })
         .intercept('/apis/custom.metrics.k8s.io/v1beta1/namespaces/default/pods/my-pod', 'DELETE')
-        .reply(200, function(uri, requestBody) {
+        .reply(200, async function(req) {
+          const requestBody = await req.text();
           requestBody.should.equal('');
           return { status: 'Success' };
         });
@@ -2445,8 +2475,10 @@ metadata:
 
       nock(SERVER_URL)
         .patch('/api/v1/namespaces/default/pods/timeout-pod?fieldManager=gea')
-        .delayConnection(2000)
-        .reply(200, {});
+        .reply(200, async () => {
+          await sleep(2000);
+          return {};
+        });
 
       const node = buildNode({
         operationTemplate: 'applyManifest',
@@ -2488,8 +2520,10 @@ metadata:
         .reply(200, okRes);
       nock(SERVER_URL)
         .patch('/api/v1/namespaces/default/configmaps/cm-timeout?fieldManager=gea')
-        .delayConnection(2000)
-        .reply(200, {});
+        .reply(200, async () => {
+          await sleep(2000);
+          return {};
+        });
       const third = nock(SERVER_URL)
         .patch('/api/v1/namespaces/default/configmaps/cm-never?fieldManager=gea')
         .reply(200, {});

@@ -112,7 +112,7 @@ class CSVEncodeNode {
       headers = headers.map(String);
     }
     CSVOpts.columns = headers;
-    let result = {};
+    let result;
     try {
       let data = payloadHelper.lookup(this.source, payload);
       if (!Array.isArray(data)) {
@@ -143,7 +143,7 @@ class CSVEncodeNode {
       result = { error: { message: e.message } };
       if (e.type) { result.error.type = e.type; }
     }
-    payload = payloadHelper.set(this.destination, result, payload);
+    payload = payloadHelper.set(this.destination, result || {}, payload);
     return [this.outputIds, payload];
   }
 }

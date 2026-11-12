@@ -327,7 +327,7 @@ describeService('mongo', 'MongoNode', () => {
       uri: testMongoUri
     });
 
-    [ oids, p ] = await replaceOneNode.run({}, {
+    [ , p ] = await replaceOneNode.run({}, {
       uri: testMongoUri,
       collectionName: 'words'
     });
@@ -343,7 +343,7 @@ describeService('mongo', 'MongoNode', () => {
       uri: testMongoUri
     });
 
-    [ oids, p ] = await aggregateNode.run({}, {
+    [ , p ] = await aggregateNode.run({}, {
       uri: testMongoUri,
       collectionName: 'words',
       arg1: [

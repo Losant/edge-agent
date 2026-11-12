@@ -1,4 +1,4 @@
-import { sinon } from '../common.js';
+import { sinon, nock } from '../common.js';
 import should from 'should';
 import { Controller, TagList, EthernetIP } from 'st-ethernet-ip';
 import {
@@ -33,6 +33,7 @@ describe('Allen Bradley Utility', () => {
     output.errors[0].message.should.equal('Tag not found.');
   });
   it('should output an error when the connection cannot be made successfully', async () => {
+    nock.restore();
     const config = {
       hostTemplate: 'localhost',
       slotTemplate: 0,
@@ -52,6 +53,13 @@ describe('Allen Bradley Utility', () => {
 
   describe('write validation', () => {
     const clientConfig = { host: '1.2.3.4', slot: 0, keepRate: 0, timeout: 5000 };
+    before(async () => {
+      // The first test above also uses host 1.2.3.4 and leaves its cached
+      // client (with connect() stubbed only for that test's lifetime) in the
+      // module-level clientCache. If it gets reused here, it calls the real
+      // Controller.connect with a now-stale/mismatched call shape.
+      await cleanClients();
+    });
     beforeEach(() => {
       reset();
       sinon.stub(Controller.prototype, 'connect').resolves();

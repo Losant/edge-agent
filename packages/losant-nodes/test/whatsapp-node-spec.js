@@ -157,7 +157,7 @@ describe('WhatsAppNode', () => {
         text: { preview_url: false, body: 'testing if the api works' },
         to: '+18125550133'
       })
-      .delayBody(100)
+      .delay(100)
       .reply(200, {
         messaging_product: 'whatsapp',
         contacts: [{ input: '+18125550133', wa_id: '+18125550133' }],
@@ -172,7 +172,7 @@ describe('WhatsAppNode', () => {
         text: { preview_url: false, body: 'testing if the api works' },
         to: '+18125550134'
       })
-      .delayBody(200)
+      .delay(200)
       .reply(200, {
         messaging_product: 'whatsapp',
         contacts: [{ input: '+18125550134', wa_id: '+18125550134' }],

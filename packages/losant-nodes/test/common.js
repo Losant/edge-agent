@@ -60,6 +60,10 @@ export const mochaHooks = {
   }
 };
 
+// export const mochaGlobalSetup = function() {
+//   await mochaHooks.beforeEach();
+// };
+
 export const mochaGlobalTeardown = function() {
   keys(nodes).forEach((name) => {
     const klass = nodes[name];

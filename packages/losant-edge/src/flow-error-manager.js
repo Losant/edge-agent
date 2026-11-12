@@ -65,12 +65,10 @@ const FlowErrorManager = () => {
     errorConfigs = FlowErrorConfigs(errorConfigs);
     const newConfigs = new Map();
     errorConfigs.forEach((config) => {
-      let updatedConfig = {};
+      let updatedConfig = { ...config, timeoutInfo: { executeTime: new Date(), numFires: 0 } };
       const currentConfig = state.configById.get(config.triggerId);
       if (currentConfig) {
         updatedConfig = { ...currentConfig, ...config };
-      } else {
-        updatedConfig = { ...config, timeoutInfo: { executeTime: new Date(), numFires: 0 } };
       }
       newConfigs.set(config.triggerId, updatedConfig);
     });
