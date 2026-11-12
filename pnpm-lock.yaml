@@ -183,8 +183,8 @@ importers:
   .:
     devDependencies:
       '@losant/eslint-config-losant':
-        specifier: github:Losant/eslint-config-losant#housekeeping-vexing
-        version: git+https://github.com/Losant/eslint-config-losant.git#06fe7e1f1c225758340883fbf001ca4d5a266572(eslint-import-resolver-node@0.3.10(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)
+        specifier: ^3.0.0
+        version: 3.0.0(eslint-import-resolver-node@0.3.10(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)
       eslint:
         specifier: ^10.14.0
         version: 10.14.0(supports-color@8.1.1)
@@ -1191,9 +1191,8 @@ packages:
   '@leichtgewicht/ip-codec@2.0.5':
     resolution: {integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==}
 
-  '@losant/eslint-config-losant@git+https://github.com/Losant/eslint-config-losant.git#06fe7e1f1c225758340883fbf001ca4d5a266572':
-    resolution: {commit: 06fe7e1f1c225758340883fbf001ca4d5a266572, repo: https://github.com/Losant/eslint-config-losant.git, type: git}
-    version: 3.0.0
+  '@losant/eslint-config-losant@3.0.0':
+    resolution: {integrity: sha512-f4txKzlVLkCMYzJygAH0a8ztavt+0+VznlXIWX7xMZqMICkfnDn6gKwHhUUX4LN/bJcyWKMOay1aF6nbqb6tcg==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       eslint: ^9 || ^10
@@ -6110,7 +6109,7 @@ snapshots:
 
   '@leichtgewicht/ip-codec@2.0.5': {}
 
-  '@losant/eslint-config-losant@git+https://github.com/Losant/eslint-config-losant.git#06fe7e1f1c225758340883fbf001ca4d5a266572(eslint-import-resolver-node@0.3.10(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)':
+  '@losant/eslint-config-losant@3.0.0(eslint-import-resolver-node@0.3.10(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
       '@eslint/js': 10.0.1(eslint@10.14.0(supports-color@8.1.1))
       eslint: 10.14.0(supports-color@8.1.1)

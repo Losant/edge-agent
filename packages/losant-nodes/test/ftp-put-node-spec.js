@@ -5,6 +5,7 @@ import { defer, noop } from 'omnibelt';
 import path from 'node:path';
 import fs from 'fs-extra';
 import ssh2 from 'ssh2';
+import http from 'node:http';
 const root = path.join(testDirectory, '__fixtures__');
 const DEFAULT_CONTEXT = {
   externalTimeout: 30000,
@@ -78,22 +79,34 @@ describe('FtpPutNode', () => {
     });
 
     it('should PUT url content over FTP', async () => {
-      // this test mocks a real HTTP fetch, unlike the rest of this suite,
-      // so re-enable nock's interceptor that the FTP beforeEach turned off.
-      if (!nock.isActive()) {
-        nock.activate();
-      }
-      nock('https://example.com:443', { encodedQueryParams: true })
-        .get('/')
-        .reply(200, '<!doctype html>\n<html>\n<head>\n    <title>Example Domain</title>\n\n    <meta charset="utf-8" />\n    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />\n    <meta name="viewport" content="width=device-width, initial-scale=1" />\n    <style type="text/css">\n    body {\n        background-color: #f0f0f2;\n        margin: 0;\n        padding: 0;\n        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;\n        \n    }\n    div {\n        width: 600px;\n        margin: 5em auto;\n        padding: 2em;\n        background-color: #fdfdff;\n        border-radius: 0.5em;\n        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);\n    }\n    a:link, a:visited {\n        color: #38488f;\n        text-decoration: none;\n    }\n    @media (max-width: 700px) {\n        div {\n            margin: 0 auto;\n            width: auto;\n        }\n    }\n    </style>    \n</head>\n\n<body>\n<div>\n    <h1>Example Domain</h1>\n    <p>This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission.</p>\n    <p><a href="https://www.iana.org/domains/example">More information...</a></p>\n</div>\n</body>\n</html>\n');
-
-      const node = new FTPPutNode('id', [[4]], {
-        ...baseNodeConfig,
-        fileUrlTemplate: 'https://example.com',
-        fileContentTemplate: ''
+      // The download and the FTP upload happen concurrently (the HTTP response
+      // body is streamed straight into the FTP data connection), so nock can't
+      // be toggled on just for the download: both a real raw FTP data socket and
+      // an active nock interceptor would need to coexist, which nock's global
+      // net.Socket/tls.TLSSocket patching doesn't tolerate (see the comment in
+      // the outer beforeEach). Use a real local HTTP server instead of nock.
+      const httpServer = http.createServer((req, res) => {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end('<!doctype html>\n<html>\n<head>\n    <title>Example Domain</title>\n</head>\n<body>\n<div>\n    <h1>Example Domain</h1>\n</div>\n</body>\n</html>\n');
       });
-      const result = await node.run(DEFAULT_CONTEXT, { ...defaultPayload, dir: '/nested/twice/' });
-      result[1].result.should.deepEqual({ success: true });
+      const deferred = defer();
+      httpServer.listen(0, '127.0.0.1', () => deferred.resolve());
+      await deferred.promise;
+      try {
+        const { port: httpPort } = httpServer.address();
+
+        const node = new FTPPutNode('id', [[4]], {
+          ...baseNodeConfig,
+          fileUrlTemplate: `http://127.0.0.1:${httpPort}`,
+          fileContentTemplate: ''
+        });
+        const result = await node.run(DEFAULT_CONTEXT, { ...defaultPayload, dir: '/nested/twice/' });
+        result[1].result.should.deepEqual({ success: true });
+      } finally {
+        const closeDeferred = defer();
+        httpServer.close(() => closeDeferred.resolve());
+        await closeDeferred.promise;
+      }
     });
 
     it('should reject invalid creds', async () => {

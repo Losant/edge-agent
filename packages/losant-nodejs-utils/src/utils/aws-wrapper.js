@@ -194,7 +194,7 @@ const AwsWrapper = (config = {}) => {
       throw sErr;
     }
     if (returnAll) {
-      return data || data;
+      return data;
     }
     return {
       etag: data?.ETag && data.ETag.replace(/"/g, '') || undefined,

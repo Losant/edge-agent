@@ -53,8 +53,14 @@ describe('Allen Bradley Utility', () => {
 
   describe('write validation', () => {
     const clientConfig = { host: '1.2.3.4', slot: 0, keepRate: 0, timeout: 5000 };
+    before(async () => {
+      // The first test above also uses host 1.2.3.4 and leaves its cached
+      // client (with connect() stubbed only for that test's lifetime) in the
+      // module-level clientCache. If it gets reused here, it calls the real
+      // Controller.connect with a now-stale/mismatched call shape.
+      await cleanClients();
+    });
     beforeEach(() => {
-      nock.restore();
       reset();
       sinon.stub(Controller.prototype, 'connect').resolves();
       sinon.stub(TagList.prototype, 'getTag').returns({

@@ -10,7 +10,7 @@ import OtelLogsWriteNode from '../../src/nodes/otel-logs-write-node.js';
 const OUTPUT_IDS = [['out']];
 const FROZEN_MS = 1700000000000;
 const FROZEN_NANO = '1700000000000000000';
-const COLLECTOR_URL = 'http://collector.example.com:4318';
+const COLLECTOR_URL = 'http://example.com';
 const LOGS_PATH = '/v1/logs';
 
 describe('OtelLogsWriteNode', () => {
@@ -42,8 +42,11 @@ describe('OtelLogsWriteNode', () => {
     nock(COLLECTOR_URL)
       .persist()
       .post(LOGS_PATH)
-      .reply(function(uri, body) {
-        requests.push({ url: uri, headers: { ...this.req.headers }, body });
+      .reply(async function(req) {
+        let body = await req.text();
+        try { body = JSON.parse(body) } catch {}
+        const url = new URL(req.url);
+        requests.push({ url: url.pathname, headers: Object.fromEntries(req.headers.entries()), body });
         return respond();
       });
     context = { externalTimeout: 5000, diskUtils: { loadGuardedFile } };
@@ -301,8 +304,10 @@ describe('OtelLogsWriteNode', () => {
     });
 
     it('appends the logs path under a configured path prefix', async () => {
-      nock(COLLECTOR_URL).post(`/otlp${LOGS_PATH}`).reply(function(uri, body) {
-        requests.push({ url: uri, headers: { ...this.req.headers }, body });
+      nock(COLLECTOR_URL).post(`/otlp${LOGS_PATH}`).reply(async function(req) {
+        const body = await req.text();
+        const url = new URL(req.url);
+        requests.push({ url: url.pathname, headers: Object.fromEntries(req.headers.entries()), body });
         return [200, {}];
       });
       const [, payload] = await buildNode({
@@ -349,7 +354,7 @@ describe('OtelLogsWriteNode', () => {
       await buildNode({ collectorUrlTemplate: `${COLLECTOR_URL}#frag`, logRecords: oneLog() })
         .run(context, {}).should.be.rejectedWith({ message: 'Collector URL must not contain a fragment.' });
       await buildNode({
-        collectorUrlTemplate: 'http://user:pw@collector.example.com:4318', logRecords: oneLog()
+        collectorUrlTemplate: 'http://user:pw@example.com:4318', logRecords: oneLog()
       }).run(context, {}).should.be.rejectedWith(/must not contain embedded credentials/);
       requests.should.have.length(0);
     });
@@ -363,16 +368,18 @@ describe('OtelLogsWriteNode', () => {
     // 4318 is only the OTLP convention, not a requirement - a collector reached
     // through a gateway or a port mapping answers wherever it was put.
     it('posts to a non-standard port', async () => {
-      nock('https://collector.example.com:18080').post(LOGS_PATH).reply(function(uri, body) {
-        requests.push({ url: uri, headers: { ...this.req.headers }, body });
+      nock('https://example.com:18080').post(LOGS_PATH).reply(async function(req) {
+        const body = await req.text();
+        const url = new URL(req.url);
+        requests.push({ url: url.pathname, headers: Object.fromEntries(req.headers.entries()), body });
         return [200, {}];
       });
       const [, payload] = await buildNode({
-        collectorUrlTemplate: 'https://collector.example.com:18080', logRecords: oneLog()
+        collectorUrlTemplate: 'https://example.com:18080', logRecords: oneLog()
       }).run(context, {});
 
       payload.working.otelResult.should.deepEqual({ success: true, logCount: 1 });
-      requests[0].headers.host.should.equal('collector.example.com:18080');
+      requests[0].headers.host.should.equal('example.com:18080');
     });
   });
 

@@ -66,7 +66,7 @@
     ]
   },
   "devDependencies": {
-    "@losant/eslint-config-losant": "github:Losant/eslint-config-losant#housekeeping-vexing",
+    "@losant/eslint-config-losant": "^3.0.0",
     "eslint": "^10.14.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",

@@ -1,7 +1,12 @@
 import { nock, stubLogger } from './common.js';
 import OtlpCollectorManager from '../src/otlp-collector-manager.js';
+import axios from 'losant-nodejs-utils/src/axios.js';
 
 describe('OtlpCollectorManager', () => {
+  beforeEach(() => {
+    verifyHosts.setDnsLookup(null);
+    axios.resolveCustomAgents(null);
+  })
   it('should report hasConfig false and throw on get when unconfigured', () => {
     const manager = OtlpCollectorManager();
     manager.hasConfig().should.be.false();
@@ -34,7 +39,7 @@ describe('OtlpCollectorManager', () => {
 
   it('should build basic auth header when authType is basic', () => {
     const manager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'basic',
       username: 'user1',
       password: 'password1'
@@ -49,7 +54,7 @@ describe('OtlpCollectorManager', () => {
 
   it('should build bearer token header when authType is bearer', () => {
     const manager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'bearer',
       bearerToken: 'my-secret-token'
     });
@@ -62,7 +67,7 @@ describe('OtlpCollectorManager', () => {
 
   it('should configure client cert and key in agentOptions', () => {
     const manager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'clientCert',
       clientCert: '---CERT---',
       clientKey: '---KEY---'
@@ -77,7 +82,7 @@ describe('OtlpCollectorManager', () => {
 
   it('should configure ca in agentOptions when caCert is provided', () => {
     const manager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'none',
       caCert: '---CA-CERT---'
     });
@@ -90,7 +95,7 @@ describe('OtlpCollectorManager', () => {
 
   it('should set rejectUnauthorized to false when disableSSLVerification is true', () => {
     const manager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'none',
       disableSSLVerification: true,
       caCert: '---CA-CERT---'
@@ -104,7 +109,7 @@ describe('OtlpCollectorManager', () => {
 
   it('should preserve literal credentials containing handlebars characters', () => {
     const manager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'basic',
       username: 'user{{name}}',
       password: 'p{{a}}ss{{word'
@@ -115,7 +120,7 @@ describe('OtlpCollectorManager', () => {
     decoded.should.equal('user{{name}}:p{{a}}ss{{word');
 
     const bearerManager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'bearer',
       bearerToken: 'token{{with}}braces{{'
     });

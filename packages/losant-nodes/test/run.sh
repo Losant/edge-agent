@@ -60,4 +60,4 @@ export SNOWFLAKE_DISABLE_PLATFORM_DETECTION=true
 scriptDir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 nodesDir=$(CDPATH= cd -- "$scriptDir/.." && pwd)
 
-pnpm mocha --require "$nodesDir/test/common.js" --timeout 15000 "$nodesDir/test" "$@"
+pnpm mocha --require 'nock' --require "$nodesDir/test/common.js" --timeout 15000 "$nodesDir/test" "$@"

@@ -16,12 +16,14 @@ describe('MailgunNode', function() {
       resultPath: 'result.here'
     });
 
-    const { bodyPromise, nockFunc } = nockMultipartParser();
-    nock('https://api.mailgun.net:443')
-      .post('/v3/y.com/messages', nockFunc).reply(200, {
+    const scope = nock('https://api.mailgun.net:443')
+      .post('/v3/y.com/messages')
+      .reply(200, {
         id: 'message-id',
         message: 'Queued. Thank you.'
       });
+    const { bodyPromise, onReplied } = nockMultipartParser();
+    scope.on('replied', onReplied);
 
     const [oids, p] = await node.run(contextify(), { attr: { a: 'example', b: 'y', c: ['to3@example.com, to4@example.com', 'to5@example.com'] } });
     oids.should.deepEqual([[4]]);
@@ -33,7 +35,6 @@ describe('MailgunNode', function() {
       },
       result: { here: { id: 'message-id', message: 'Queued. Thank you.' } }
     });
-
     (await bodyPromise).should.deepEqual({
       'v:applicationId': '000000000000000000000002',
       'v:workflowId': '000000000000000000000001',
@@ -63,12 +64,13 @@ describe('MailgunNode', function() {
       resultPath: 'result.here'
     });
 
-    const { bodyPromise, nockFunc } = nockMultipartParser();
-    nock('https://api.mailgun.net:443')
-      .post('/v3/y.com/messages', nockFunc).reply(200, {
+    const scope = nock('https://api.mailgun.net:443')
+      .post('/v3/y.com/messages').reply(200, {
         id: 'message-id',
         message: 'Queued. Thank you.'
       });
+    const { bodyPromise, onReplied } = nockMultipartParser();
+    scope.on('replied', onReplied);
 
     const [oids, p] = await node.run(contextify(), { attr: { a: 'example', b: 'y' }, a1: 'one', a3: 'dGhyZWU=' });
     oids.should.deepEqual([[4]]);
@@ -133,12 +135,13 @@ describe('MailgunNode', function() {
       .get('/where.png')
       .reply(200, Buffer.from('hello'));
 
-    const { bodyPromise, nockFunc } = nockMultipartParser();
-    nock('https://api.mailgun.net:443')
-      .post('/v3/d.com/messages', nockFunc).reply(200, {
+    const scope = nock('https://api.mailgun.net:443')
+      .post('/v3/d.com/messages').reply(200, {
         id: 'message-id',
         message: 'Queued. Thank you.'
       });
+    const { bodyPromise, onReplied } = nockMultipartParser();
+    scope.on('replied', onReplied);
 
     const [oids, p] = await node.run(contextify(), { a1: 'https://example.com/what', a3: 'https://example.com/where.png' });
     oids.should.deepEqual([[4]]);
