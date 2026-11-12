@@ -861,7 +861,7 @@ describe('HttpNode', () => {
 
   it('should successfully work for multipart form data', async () => {
     let boundary, reqBody;
-    const scope = nock('http://www.example.com')
+    nock('http://www.example.com')
       .post('/')
       .reply(200, async (req) => {
         boundary = Object.fromEntries(req.headers.entries())['content-type'].split('=')[1];

@@ -45,8 +45,8 @@ describe('OtelMetricsWriteNode', () => {
       .post(METRICS_PATH)
       .reply(async function(req) {
         let body = await req.text();
-        try { body = JSON.parse(body) } catch {}
-        const url = new URL(req.url)
+        try { body = JSON.parse(body); } catch {}
+        const url = new URL(req.url);
         requests.push({ url: url.pathname, headers: Object.fromEntries(req.headers.entries()), body });
         return respond();
       });

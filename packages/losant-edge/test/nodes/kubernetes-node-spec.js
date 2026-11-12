@@ -2476,7 +2476,7 @@ metadata:
       nock(SERVER_URL)
         .patch('/api/v1/namespaces/default/pods/timeout-pod?fieldManager=gea')
         .reply(200, async () => {
-          await sleep(2000)
+          await sleep(2000);
           return {};
         });
 

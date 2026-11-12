@@ -1,12 +1,13 @@
 import { nock, stubLogger } from './common.js';
 import OtlpCollectorManager from '../src/otlp-collector-manager.js';
 import axios from 'losant-nodejs-utils/src/axios.js';
+import verifyHosts from 'losant-nodejs-utils/src/utils/verify-hosts.js';
 
 describe('OtlpCollectorManager', () => {
   beforeEach(() => {
     verifyHosts.setDnsLookup(null);
     axios.resolveCustomAgents(null);
-  })
+  });
   it('should report hasConfig false and throw on get when unconfigured', () => {
     const manager = OtlpCollectorManager();
     manager.hasConfig().should.be.false();
