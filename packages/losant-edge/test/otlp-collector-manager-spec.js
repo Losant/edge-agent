@@ -157,8 +157,8 @@ describe('OtlpCollectorManager', () => {
         }
       })
         .post('/v1/metrics')
-        .reply(200, (uri, requestBody) => {
-          capturedMetricsBody = typeof requestBody === 'string' ? JSON.parse(requestBody) : requestBody;
+        .reply(200, async (req) => {
+          capturedMetricsBody = JSON.parse(await req.text());
           return {};
         });
 
@@ -271,8 +271,8 @@ describe('OtlpCollectorManager', () => {
       nock(baseUrl)
         .post('/v1/metrics')
         .twice()
-        .reply(200, (uri, requestBody) => {
-          const body = typeof requestBody === 'string' ? JSON.parse(requestBody) : requestBody;
+        .reply(200, async (req) => {
+          const body = JSON.parse(await req.text());
           const metrics = body.resourceMetrics[0].scopeMetrics[0].metrics;
           const cpuMetric = metrics.find((m) => m.name === 'process.cpu.time');
           startTimes.push(cpuMetric.sum.dataPoints[0].startTimeUnixNano);

@@ -1,11 +1,16 @@
 import { sleep, defer } from 'omnibelt';
 import ModbusRTU from 'modbus-serial';
+import nock from 'nock';
 import { sinon } from './common.js';
 import { queueInstructions, cleanClients, reset } from '../src/lib/connections/modbus.js';
 
 describe('Modbus Connections Lib', () => {
   let interval;
   beforeEach(() => {
+    // nock's interception layer intercepts raw TCP sockets too (not just http/https),
+    // which makes connections to hosts that should refuse/timeout falsely "succeed".
+    // This suite relies on real TCP connection failures, so nock must stay off here.
+    nock.restore();
     reset();
   });
   afterEach(() => {

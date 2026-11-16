@@ -1,4 +1,5 @@
 import { defer } from 'omnibelt';
+import nock from 'nock';
 import BeckhoffReadNode from '../../src/nodes/beckhoff-read-node.js';
 import { reset } from '../../src/lib/connections/beckhoff.js';
 
@@ -121,6 +122,10 @@ export const abstractTests = (NodeClass) => {
 
 describe('Beckhoff Read Node', () => {
   beforeEach(async () => {
+    // nock's interception layer intercepts raw TCP sockets too (not just http/https),
+    // which makes connections to hosts that should refuse/timeout falsely "succeed".
+    // This suite relies on real TCP connection failures, so nock must stay off here.
+    nock.restore();
     await reset();
   });
   afterEach(async () => {
