@@ -519,8 +519,8 @@ importers:
         specifier: ^1.11.0
         version: 1.11.0
       '@jsforce/jsforce-node':
-        specifier: 3.10.16
-        version: 3.10.16(supports-color@8.1.1)
+        specifier: 3.13.1
+        version: 3.13.1
       '@peculiar/asn1-x509':
         specifier: ^2.11.1
         version: 2.11.1
@@ -1187,9 +1187,9 @@ packages:
   '@js-sdsl/ordered-map@4.4.2':
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
 
-  '@jsforce/jsforce-node@3.10.16':
-    resolution: {integrity: sha512-Fh5Op3vgyWMmPhjsr0d50AwPj6X9rsUNiJOPqA2OmJmv3HduIRY8tK+nc/IdtkOGdYXDk09q1cu0PG5pGERGgA==}
-    engines: {node: '>=18'}
+  '@jsforce/jsforce-node@3.13.1':
+    resolution: {integrity: sha512-vpHhwc+Wcufk9vARzL4oxYSzg8ndNButSn88D6pMImjns7/NTkwPZ9qQwD2F/P4c+A0lwTyDl4Alry0BMgFsTg==}
+    engines: {node: '>=22'}
 
   '@keyv/bigmap@1.3.1':
     resolution: {integrity: sha512-WbzE9sdmQtKy8vrNPa9BRnwZh5UF4s1KTmSK0KUVLo3eff5BlQNNWDnFOouNpKfPKDnms9xynJjsMYjMaT/aFQ==}
@@ -6136,21 +6136,18 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
-  '@jsforce/jsforce-node@3.10.16(supports-color@8.1.1)':
+  '@jsforce/jsforce-node@3.13.1':
     dependencies:
       '@sindresorhus/is': 4.6.0
       base64url: 3.0.1
+      cross-spawn: 7.0.6
       csv-parse: 7.0.3(patch_hash=18f855c585930feb5acc28a408fa03e7c133d7909b8e9f1e4a949b7771201cb3)
       csv-stringify: 6.9.0
       faye: 1.4.3
       form-data: 4.0.6
-      https-proxy-agent: 5.0.1(supports-color@8.1.1)
       multistream: 3.1.0
-      node-fetch: 2.7.0
+      undici: 8.12.4
       xml2js: 0.6.2
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
 
   '@keyv/bigmap@1.3.1(keyv@5.6.0)':
     dependencies:

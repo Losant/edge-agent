@@ -1387,16 +1387,32 @@ describe('HttpNode', () => {
     });
 
     it('should abort large downloads', function() {
+      // The request's own timeout defaults to 30000ms, longer than this
+      // file's 15000ms mocha timeout. If the client's maxContentLength check
+      // doesn't trip before mocha's timeout fires, mocha fails the test but
+      // the original promise keeps running; when it later settles and its
+      // .then() assertion throws, mocha sees a second done() call and crashes
+      // the whole process, skipping afterEach and leaking this httpsServer
+      // (which then poisons every later test with EADDRINUSE on :55443).
+      // Keep this test's own timeout comfortably above the request timeout
+      // so the two can't race.
+      this.timeout(35000);
       const options = {
         key: fakeServerKey,
         cert: fakeServerCert,
         ca: fakeCaCert
       };
 
+      // Whether the client ever destroys its end of the socket once it hits
+      // maxContentLength isn't reliable, so don't depend on res.destroyed to
+      // stop the writer -- tie it directly to the test's own completion.
+      const stopWriting = defer();
       httpsServer = https.createServer(options, (req, res) => {
         res.writeHead(200);
+        let stopped = false;
+        stopWriting.promise.then(() => { stopped = true; });
         const writer = () => {
-          if (res.destroyed) { return; }
+          if (stopped || res.destroyed) { return; }
           res.write(fakeClientKey+fakeClientKey+fakeClientKey+fakeClientKey, writer);
         };
         writer();
@@ -1423,7 +1439,8 @@ describe('HttpNode', () => {
             timeout: 30000,
             uri: 'https://localhost:55443/'
           });
-        });
+        })
+        .finally(() => stopWriting.resolve());
     });
 
     it('should work with a custom CA cert', async () => {
