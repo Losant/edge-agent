@@ -1,6 +1,6 @@
 {
   "name": "losant-nodejs-utils",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "license": "Apache-2.0",
   "description": "Node.js-only shared utilities used by the Losant Gateway Edge Agent and workflow nodes",
   "repository": {

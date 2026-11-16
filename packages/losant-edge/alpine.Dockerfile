@@ -57,7 +57,7 @@ ENV CONF_PATH_DEFAULT="/etc/losant/losant-edge-agent-config.toml" \
 
 # http://label-schema.org/rc1/
 LABEL maintainer="support@losant.com" \
-  org.label-schema.schema-version="2.7.0" \
+  org.label-schema.schema-version="2.8.0" \
   org.label-schema.name="Losant Gateway Edge Agent" \
   org.label-schema.url="https://www.losant.com" \
   org.label-schema.vendor="SUSE" \
