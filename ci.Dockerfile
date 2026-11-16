@@ -1,10 +1,10 @@
-FROM node:26.13.0-alpine3.23
+FROM node:26.13.1-alpine3.23
 
 ENV CI="true" \
   PNPM_HOME="/pnpm"
 
 ENV PATH="$PNPM_HOME/bin:$PATH"
-ENV PNPM_VERSION=12.16.1
+ENV PNPM_VERSION=12.21.0
 
 RUN npx get-pnpm
 
