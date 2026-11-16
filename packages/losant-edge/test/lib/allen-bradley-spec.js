@@ -12,6 +12,9 @@ import {
 } from '../../src/lib/allen-bradley-utils.js';
 
 describe('Allen Bradley Utility', () => {
+  beforeEach(() => {
+    nock.restore();
+  });
   it('should output an error on read since the connection is broken(fake) but still set plc props', async () => {
     sinon.stub(Controller.prototype, 'connect').resolves(Promise.resolve());
     sinon.stub(Controller.prototype, 'getControllerTagList').resolves(true);
@@ -33,7 +36,6 @@ describe('Allen Bradley Utility', () => {
     output.errors[0].message.should.equal('Tag not found.');
   });
   it('should output an error when the connection cannot be made successfully', async () => {
-    nock.restore();
     const config = {
       hostTemplate: 'localhost',
       slotTemplate: 0,

@@ -40,31 +40,6 @@ const SERVER_URL = 'https://example.com';
 const TOKEN = 'test-bearer-token-12345';
 
 describe('KubernetesNode', () => {
-  // nock 15 (mswjs/interceptors) races a real background connection against
-  // every mocked request. For a nonexistent hostname like k8s.example.com,
-  // that real connection's DNS lookup can fail (or succeed/hang, depending on
-  // environment) at an inconsistent speed relative to nock's in-process mock,
-  // which under full-suite load sometimes wins the race or blocks on it.
-  // Resolving the fake hostname straight to loopback makes that background
-  // connection attempt fail near-instantly (ECONNREFUSED, nothing listening),
-  // instead of a slow/flaky real DNS round trip.
-  // const originalDnsLookup = dns.lookup;
-  // before(() => {
-  //   dns.lookup = (hostname, ...rest) => {
-  //     const callback = rest[rest.length - 1];
-  //     if (hostname === 'k8s.example.com') {
-  //       const options = rest.length > 1 ? rest[0] : {};
-  //       if (options && options.all) {
-  //         return process.nextTick(() => callback(null, [{ address: '127.0.0.1', family: 4 }]));
-  //       }
-  //       return process.nextTick(() => callback(null, '127.0.0.1', 4));
-  //     }
-  //     return originalDnsLookup.call(dns, hostname, ...rest);
-  //   };
-  // });
-  // after(() => {
-  //   dns.lookup = originalDnsLookup;
-  // });
 
   const defaultContext = {
     diskUtils: { guardPath, loadGuardedFile },
