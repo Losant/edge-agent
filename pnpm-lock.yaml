@@ -519,7 +519,7 @@ importers:
         specifier: ^1.11.0
         version: 1.11.0
       '@jsforce/jsforce-node':
-        specifier: 3.13.1
+        specifier: ^3.13.1
         version: 3.13.1
       '@peculiar/asn1-x509':
         specifier: ^2.11.1

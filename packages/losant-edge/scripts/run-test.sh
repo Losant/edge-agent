@@ -22,6 +22,7 @@ export MOSQUITTO_HOST="${MOSQUITTO_HOST:-localhost}"
 # as a side effect of being imported. On a host where those answer (e.g. GCP CI), the aborted probe
 # sockets crash node with a libuv assertion (uv__stream_destroy) before any test runs.
 export SNOWFLAKE_DISABLE_PLATFORM_DETECTION=true
+export AWS_EC2_METADATA_DISABLED=true
 
 rm -rf packages/losant-edge/test/testing-workspace
 mkdir packages/losant-edge/test/testing-workspace
