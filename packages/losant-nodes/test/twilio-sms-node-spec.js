@@ -155,7 +155,7 @@ describe('TwilioSmsNode', () => {
       .post('/2010-04-01/Accounts/ACtheAccountSid/Messages.json', {
         To: '+18125550133', From: '+12346547612', Body: 'the body'
       })
-      .delayBody(100)
+      .delay(100)
       .reply(200, {});
 
     nock('https://api.twilio.com')
@@ -163,7 +163,7 @@ describe('TwilioSmsNode', () => {
       .post('/2010-04-01/Accounts/ACtheAccountSid/Messages.json', {
         To: '+18125550134', From: '+12346547612', Body: 'the body'
       })
-      .delayBody(200)
+      .delay(200)
       .reply(200, {});
 
     const [oids, p] = await node.run(contextify({

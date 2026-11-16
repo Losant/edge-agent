@@ -6,13 +6,13 @@ The Losant Gateway Edge Agent is a service that’s installed on every Losant Ed
 
 ### Supported Tags
 
-- `2.7.0`, `2.7`, `2`, `latest`
-- `2.7.0-amd64`, `2.7-amd64`, `2-amd64`, `latest-amd64`
-- `2.7.0-arm64`, `2.7-arm64`, `2-arm64`, `latest-arm64`
+- `2.8.0`, `2.8`, `2`, `latest`
+- `2.8.0-amd64`, `2.8-amd64`, `2-amd64`, `latest-amd64`
+- `2.8.0-arm64`, `2.8-arm64`, `2-arm64`, `latest-arm64`
 
-- `2.7.0-alpine`, `2.7-alpine`, `2-alpine`, `latest-alpine`
-- `2.7.0-alpine-amd64`, `2.7-alpine-amd64`, `2-alpine-amd64`, `latest-alpine-amd64`
-- `2.7.0-alpine-arm64`, `2.7-alpine-arm64`, `2-alpine-arm64`, `latest-alpine-arm64`
+- `2.8.0-alpine`, `2.8-alpine`, `2-alpine`, `latest-alpine`
+- `2.8.0-alpine-amd64`, `2.8-alpine-amd64`, `2-alpine-amd64`, `latest-alpine-amd64`
+- `2.8.0-alpine-arm64`, `2.8-alpine-arm64`, `2-alpine-arm64`, `latest-alpine-arm64`
 
 ### Quick reference
 

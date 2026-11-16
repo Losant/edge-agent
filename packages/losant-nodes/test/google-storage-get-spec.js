@@ -194,6 +194,14 @@ describe('GoogleCloudStorageGetNode', () => {
           kind: 'storage#object', id: 'test-bucket/test.txt/1660877588123632', selfLink: 'https://www.googleapis.com/storage/v1/b/test-bucket/o/test.txt', mediaLink: 'https://storage.googleapis.com/download/storage/v1/b/test-bucket/o/test.txt?generation=1660877588123632&alt=media', name: 'test.txt', bucket: 'test-bucket', generation: '1660877588123632', metageneration: '1', contentType: 'text/plain', storageClass: 'STANDARD', size: '13', md5Hash: 'hFrMx0qYyC22fH8kfr8Zgw==', crc32c: 'eFrvDA==', etag: 'CPCfn5Xz0fkCEAE=', timeCreated: '2022-08-19T02:53:08.158Z', updated: '2022-08-19T02:53:08.158Z', timeStorageClassUpdated: '2022-08-19T02:53:08.158Z'
         });
 
+      nock('https://storage.googleapis.com:443', { encodedQueryParams: true })
+        .get('/storage/v1/b/test-bucket/o/test.txt')
+        .query({ alt: 'media' })
+        .reply(200, "I'm a result!", [
+          'Content-Type',
+          'text/plain'
+        ]);
+
       const result = await node.run(contextify(), {});
       result[1].out.error.should.equal(`EISDIR: illegal operation on a directory, open '${path.resolve(readOnlyDir)}'`);
     });

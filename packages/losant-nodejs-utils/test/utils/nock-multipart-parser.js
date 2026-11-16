@@ -4,21 +4,17 @@ import Wreck from '@hapi/wreck';
 
 export default () => {
   const deferred = defer();
-  const nockFunc = function(body) {
-    deferred.resolve([body, this.headers]);
-    return true;
-  };
-
-  const chain = deferred.promise.then(async ([body, headers]) => {
+  const onReplied = async (req) => {
+    const body = await req.text();
     const readable = Wreck.toReadableStream(body);
-    readable.headers = headers;
+    readable.headers = Object.fromEntries(req.headers.entries());
     const parsed = await Subtext.parse(readable, null, {
       output: 'data',
       parse: true,
       multipart: { output: 'annotated' }
     });
-    return parsed.payload;
-  });
+    deferred.resolve(parsed.payload);
+  };
 
-  return { bodyPromise: chain, nockFunc };
+  return { bodyPromise: deferred.promise, onReplied };
 };

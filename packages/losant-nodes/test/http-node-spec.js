@@ -860,15 +860,14 @@ describe('HttpNode', () => {
   });
 
   it('should successfully work for multipart form data', async () => {
-    const scope = nock('http://www.example.com')
-      .post('/')
-      .reply(200, 'hello');
-
     let boundary, reqBody;
-    scope.on('request', (req, interceptor, body) => {
-      boundary = req.options.headers['content-type'].split('=')[1];
-      reqBody = body;
-    });
+    nock('http://www.example.com')
+      .post('/')
+      .reply(200, async (req) => {
+        boundary = Object.fromEntries(req.headers.entries())['content-type'].split('=')[1];
+        reqBody = await req.text();
+        return 'hello';
+      });
 
     const node = new HttpNode('id', [[4]], {
       method: 'POST',
@@ -1338,16 +1337,27 @@ describe('HttpNode', () => {
 
   describe('tests with fake local https server', () => {
     let httpsServer;
+    beforeEach(() => {
+      // The server and client both live in this same process, on localhost.
+      // nock's active interceptor patches net.Socket/tls.TLSSocket globally,
+      // which hangs this real loopback TLS handshake (see the same issue
+      // documented in ftp-put-node-spec.js), so turn nock off for this suite.
+      nock.restore();
+    });
     afterEach(async () => {
       if (!httpsServer) { return; }
       const deferred = defer();
       httpsServer.close(deferred.resolve);
+      // Some tests (e.g. aborted downloads) leave a straggler socket whose
+      // server-side half never naturally ends once the client disconnects,
+      // which leaves the graceful close() above waiting forever. Force any
+      // still-open connections closed so teardown can't hang.
+      httpsServer.closeAllConnections();
       await deferred.promise;
       httpsServer = null;
     });
 
     it('should disable the ssl verification check on the request when enabled', async () => {
-      nock.enableNetConnect('localhost');
       const options = {
         key: fakeServerKey,
         cert: fakeServerCert,
@@ -1377,16 +1387,32 @@ describe('HttpNode', () => {
     });
 
     it('should abort large downloads', function() {
-      nock.enableNetConnect('localhost');
+      // The request's own timeout defaults to 30000ms, longer than this
+      // file's 15000ms mocha timeout. If the client's maxContentLength check
+      // doesn't trip before mocha's timeout fires, mocha fails the test but
+      // the original promise keeps running; when it later settles and its
+      // .then() assertion throws, mocha sees a second done() call and crashes
+      // the whole process, skipping afterEach and leaking this httpsServer
+      // (which then poisons every later test with EADDRINUSE on :55443).
+      // Keep this test's own timeout comfortably above the request timeout
+      // so the two can't race.
+      this.timeout(35000);
       const options = {
         key: fakeServerKey,
         cert: fakeServerCert,
         ca: fakeCaCert
       };
 
+      // Whether the client ever destroys its end of the socket once it hits
+      // maxContentLength isn't reliable, so don't depend on res.destroyed to
+      // stop the writer -- tie it directly to the test's own completion.
+      const stopWriting = defer();
       httpsServer = https.createServer(options, (req, res) => {
         res.writeHead(200);
+        let stopped = false;
+        stopWriting.promise.then(() => { stopped = true; });
         const writer = () => {
+          if (stopped || res.destroyed) { return; }
           res.write(fakeClientKey+fakeClientKey+fakeClientKey+fakeClientKey, writer);
         };
         writer();
@@ -1413,11 +1439,11 @@ describe('HttpNode', () => {
             timeout: 30000,
             uri: 'https://localhost:55443/'
           });
-        });
+        })
+        .finally(() => stopWriting.resolve());
     });
 
     it('should work with a custom CA cert', async () => {
-      nock.enableNetConnect('localhost');
 
       const options = {
         key: fakeServerKey,
@@ -1489,7 +1515,6 @@ describe('HttpNode', () => {
     });
 
     it('should work with a client cert auth', async () => {
-      nock.enableNetConnect('localhost');
 
       const options = {
         key: fakeServerKey,

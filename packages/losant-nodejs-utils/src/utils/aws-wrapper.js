@@ -189,7 +189,7 @@ const AwsWrapper = (config = {}) => {
     } catch (err) {
       const sErr = transformError(err);
       if (sErr.isNotFoundError) {
-        return null;
+        return data;
       }
       throw sErr;
     }

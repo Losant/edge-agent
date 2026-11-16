@@ -1,4 +1,4 @@
-import { Aedes } from 'aedes'; // eslint-disable-line import/no-unresolved
+import { Aedes } from 'aedes';
 import net from 'net';
 import { defer, sleep } from 'omnibelt';
 import LJSON from '../../src/ljson.js';

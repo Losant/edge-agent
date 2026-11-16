@@ -124,7 +124,7 @@ const computeSecondsNextRunAt = ({ now, lastRunAt, lastChangedAt, seconds }) => 
 };
 
 const computeNextRunAt = ({ now, lastRunAt, lastChangedAt, timerConfig }) => {
-  let nextRunAt = null;
+  let nextRunAt;
   if (isNil(timerConfig.cron)) {
     nextRunAt = computeSecondsNextRunAt({
       now,
@@ -146,7 +146,7 @@ const computeNextRunAt = ({ now, lastRunAt, lastChangedAt, timerConfig }) => {
     nextRunAt = lastRunAt;
   }
 
-  return nextRunAt;
+  return nextRunAt || null;
 };
 
 const TimerManager = (globalStore) => {

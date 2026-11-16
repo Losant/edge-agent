@@ -4,7 +4,7 @@ import https from 'node:https';
 import { Readable } from 'node:stream';
 import { text } from 'node:stream/consumers';
 import fs from 'fs-extra';
-import { mapP } from 'omnibelt';
+import { mapP, sleep } from 'omnibelt';
 import { nock, sinon, should, restoreEnv } from '../common.js';
 import errors from 'losant-nodejs-utils/src/errors.js';
 import { PACKAGE_ROOT_DIR } from '../../src/constants.js';
@@ -36,10 +36,11 @@ import KubernetesNode, {
 } from '../../src/nodes/kubernetes-node.js';
 
 const OUTPUT_IDS = [['out']];
-const SERVER_URL = 'https://k8s.example.com:6443';
+const SERVER_URL = 'https://example.com';
 const TOKEN = 'test-bearer-token-12345';
 
 describe('KubernetesNode', () => {
+
   const defaultContext = {
     diskUtils: { guardPath, loadGuardedFile },
     externalTimeout: 30000
@@ -884,7 +885,8 @@ data:
         badheaders: ['content-type']
       })
         .get('/api/v1/pods')
-        .reply(200, function(uri, requestBody) {
+        .reply(200, async function(req) {
+          const requestBody = await req.text();
           requestBody.should.equal('');
           return { items: [] };
         });
@@ -893,7 +895,8 @@ data:
         badheaders: ['content-type']
       })
         .delete('/api/v1/namespaces/default/pods/my-pod')
-        .reply(200, function(uri, requestBody) {
+        .reply(200, async function(req) {
+          const requestBody = await req.text();
           requestBody.should.equal('');
           return { status: 'Success' };
         });
@@ -1359,7 +1362,8 @@ data:
         badheaders: ['content-type']
       })
         .intercept('/apis/custom.metrics.k8s.io/v1beta1/namespaces/default/pods', 'GET')
-        .reply(200, function(uri, requestBody) {
+        .reply(200, async function(req) {
+          const requestBody = await req.text();
           requestBody.should.equal('');
           return { items: [] };
         });
@@ -1368,7 +1372,8 @@ data:
         badheaders: ['content-type']
       })
         .intercept('/apis/custom.metrics.k8s.io/v1beta1/namespaces/default/pods/my-pod', 'DELETE')
-        .reply(200, function(uri, requestBody) {
+        .reply(200, async function(req) {
+          const requestBody = await req.text();
           requestBody.should.equal('');
           return { status: 'Success' };
         });
@@ -2445,8 +2450,10 @@ metadata:
 
       nock(SERVER_URL)
         .patch('/api/v1/namespaces/default/pods/timeout-pod?fieldManager=gea')
-        .delayConnection(2000)
-        .reply(200, {});
+        .reply(200, async () => {
+          await sleep(2000);
+          return {};
+        });
 
       const node = buildNode({
         operationTemplate: 'applyManifest',
@@ -2488,8 +2495,10 @@ metadata:
         .reply(200, okRes);
       nock(SERVER_URL)
         .patch('/api/v1/namespaces/default/configmaps/cm-timeout?fieldManager=gea')
-        .delayConnection(2000)
-        .reply(200, {});
+        .reply(200, async () => {
+          await sleep(2000);
+          return {};
+        });
       const third = nock(SERVER_URL)
         .patch('/api/v1/namespaces/default/configmaps/cm-never?fieldManager=gea')
         .reply(200, {});

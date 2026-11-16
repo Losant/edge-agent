@@ -1,4 +1,4 @@
-import { testDirectory, defaultDiskUtils, protectedDiskUtils } from './common.js';
+import { nock, testDirectory, defaultDiskUtils, protectedDiskUtils } from './common.js';
 import FTPGetNode from '../src/ftp-get-node.js';
 import FtpSrv from 'ftp-srv';
 import { defer, noop } from 'omnibelt';
@@ -43,6 +43,10 @@ describe('FtpGetNode', () => {
 
   describe('FTP', () => {
     beforeEach(async () => {
+      // ftp-srv and basic-ftp use real TCP/TLS sockets. nock's active
+      // interceptor patches net.Socket/tls.TLSSocket globally, which crashes
+      // on these non-HTTP connections, so turn it off for this suite.
+      nock.restore();
       const log = { info: noop, error: noop, trace: noop, debug: noop };
       log.child = () => { return log; };
       server = new FtpSrv({

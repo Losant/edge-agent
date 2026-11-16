@@ -29,7 +29,7 @@ const deviceCSRWithSan = (await pem.createCSR({
   keyBitsize: 2048,
   hash: 'sha256',
   commonName: 'CSR with SAN',
-  altNames: [ 'original.example.com', 'second.example.com' ]
+  altNames: [ 'garfieldminusgarfield.net', 'example.com' ]
 })).csr;
 const { privateKey: deviceECPrivateKey, publicKey: deviceECPublicKey } = generateKeyPairSync('ec', {
   namedCurve: 'prime256v1',
@@ -391,8 +391,8 @@ describe('CertificateCreateNode', () => {
       });
       const results = await node.run({}, {});
       const altValues = sanEntries(extensionsByName(results[1].result.certificate).subjectAltName).map((a) => a.value);
-      altValues.should.containEql('original.example.com');
-      altValues.should.containEql('second.example.com');
+      altValues.should.containEql('garfieldminusgarfield.net');
+      altValues.should.containEql('example.com');
     });
 
     it('preserves the CSR SAN even when the CN is overridden', async () => {
@@ -404,8 +404,8 @@ describe('CertificateCreateNode', () => {
       const results = await node.run({}, {});
       results[1].result.info.commonName.should.equal('overridden.example.com');
       const altValues = sanEntries(extensionsByName(results[1].result.certificate).subjectAltName).map((a) => a.value);
-      altValues.should.containEql('original.example.com');
-      altValues.should.containEql('second.example.com');
+      altValues.should.containEql('garfieldminusgarfield.net');
+      altValues.should.containEql('example.com');
     });
 
     it('preserves multiple OU values from the CSR when no subject override is given', async () => {
@@ -425,7 +425,7 @@ describe('CertificateCreateNode', () => {
     it('preserves multi-OU when overriding a different field (CN)', async () => {
       const node = new CertificateCreateNode('id', [[4]], {
         ...baseConfig,
-        csrTemplate: await buildMultiOuCsr('original.example.com'),
+        csrTemplate: await buildMultiOuCsr('garfieldminusgarfield.net'),
         commonNameTemplate: 'overridden.example.com'
       });
       const results = await node.run({}, {});
@@ -446,8 +446,8 @@ describe('CertificateCreateNode', () => {
       const results = await node.run({}, {});
       const altValues = sanEntries(extensionsByName(results[1].result.certificate).subjectAltName).map((a) => a.value);
       altValues.should.deepEqual([ 'replacement.example.com' ]);
-      altValues.should.not.containEql('original.example.com');
-      altValues.should.not.containEql('second.example.com');
+      altValues.should.not.containEql('garfieldminusgarfield.net');
+      altValues.should.not.containEql('example.com');
     });
 
     it('rejects an empty-subject CSR with no override CN or SAN', async () => {

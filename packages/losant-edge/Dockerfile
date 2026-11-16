@@ -49,13 +49,14 @@ ENV CONF_PATH_DEFAULT="/etc/losant/losant-edge-agent-config.toml" \
   NODE_EXTRA_CA_CERTS="/etc/ssl/certs/ca-certificates.crt" \
   NODEOPCUA_LOG_LEVEL="0" \
   SNOWFLAKE_DISABLE_PLATFORM_DETECTION="true" \
+  AWS_EC2_METADATA_DISABLED="true" \
   PATH="/home/losant/.config/npm/bin:${PATH}" \
   NODE_PATH="/home/losant/.config/yarn/global/node_modules:/home/losant/.config/npm/lib/node_modules" \
   ROLLBAR_KEY="${ROLLBAR_KEY}"
 
 # http://label-schema.org/rc1/
 LABEL maintainer="support@losant.com" \
-  org.label-schema.schema-version="2.7.0" \
+  org.label-schema.schema-version="2.8.0" \
   org.label-schema.name="Losant Gateway Edge Agent" \
   org.label-schema.url="https://www.losant.com" \
   org.label-schema.vendor="SUSE" \

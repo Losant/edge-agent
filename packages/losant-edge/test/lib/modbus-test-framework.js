@@ -1,3 +1,4 @@
+import nock from 'nock';
 import { socat } from '../common.js';
 import ModbusWriteNode from '../../src/nodes/modbus-write-node.js';
 import ModbusReadNode from '../../src/nodes/modbus-read-node.js';
@@ -19,6 +20,10 @@ export default ({
 }) => {
 
   beforeEach(() => {
+    // nock's interception layer intercepts raw TCP sockets too (not just http/https),
+    // which makes connections to hosts that should refuse/timeout falsely "succeed".
+    // These tests rely on real TCP connection behavior, so nock must stay off here.
+    nock.restore();
     resetConnections();
   });
 

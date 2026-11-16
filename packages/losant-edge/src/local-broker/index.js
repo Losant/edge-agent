@@ -1,4 +1,4 @@
-import { Aedes } from 'aedes'; // eslint-disable-line import/no-unresolved
+import { Aedes } from 'aedes';
 import logger from '../logger/index.js';
 import errors from 'losant-nodejs-utils/src/errors.js';
 import LocalBrokerConfig from '../types/local-broker-config.js';

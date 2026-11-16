@@ -56,6 +56,7 @@ describe('LogglyWriteNode', () => {
         body.should.equal('foo{"foo":"bar"}');
         return true;
       })
+      .delay(50)
       .reply(200, { response: 'ok' });
 
     const node = new LogglyWriteNode('id', [[4]], {
@@ -67,7 +68,7 @@ describe('LogglyWriteNode', () => {
         { messageTemplate: 'foo', jsonTemplate: { foo: 'bar' } }
       ]
     });
-    const result = await node.run({ externalTimeout: 0.1 }, {});
+    const result = await node.run({ externalTimeout: 10 }, {});
     result[1].out.success.should.equal(false);
     result[1].out.results.should.deepEqual([
       { success: false, error: 'Request timed out.' },

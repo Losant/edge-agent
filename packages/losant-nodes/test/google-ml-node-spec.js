@@ -116,7 +116,7 @@ describe('GoogleMlNode', () => {
 
     nock('https://ml.googleapis.com:443', { encodedQueryParams: true })
       .post('/v1/projects/test-playground/models/smart_factory_vibration/versions/v1:predict', { instances })
-      .delayBody(500)
+      .delay(500)
       .reply(200, { predictions }, ['Content-Type', 'application/json']);
 
     const node = new GoogleMlNode('id', [[4]], {

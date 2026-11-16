@@ -34,7 +34,7 @@ describe('OtlpCollectorManager', () => {
 
   it('should build basic auth header when authType is basic', () => {
     const manager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'basic',
       username: 'user1',
       password: 'password1'
@@ -49,7 +49,7 @@ describe('OtlpCollectorManager', () => {
 
   it('should build bearer token header when authType is bearer', () => {
     const manager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'bearer',
       bearerToken: 'my-secret-token'
     });
@@ -62,7 +62,7 @@ describe('OtlpCollectorManager', () => {
 
   it('should configure client cert and key in agentOptions', () => {
     const manager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'clientCert',
       clientCert: '---CERT---',
       clientKey: '---KEY---'
@@ -77,7 +77,7 @@ describe('OtlpCollectorManager', () => {
 
   it('should configure ca in agentOptions when caCert is provided', () => {
     const manager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'none',
       caCert: '---CA-CERT---'
     });
@@ -90,7 +90,7 @@ describe('OtlpCollectorManager', () => {
 
   it('should set rejectUnauthorized to false when disableSSLVerification is true', () => {
     const manager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'none',
       disableSSLVerification: true,
       caCert: '---CA-CERT---'
@@ -104,7 +104,7 @@ describe('OtlpCollectorManager', () => {
 
   it('should preserve literal credentials containing handlebars characters', () => {
     const manager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'basic',
       username: 'user{{name}}',
       password: 'p{{a}}ss{{word'
@@ -115,7 +115,7 @@ describe('OtlpCollectorManager', () => {
     decoded.should.equal('user{{name}}:p{{a}}ss{{word');
 
     const bearerManager = OtlpCollectorManager({
-      url: 'https://collector.example.com',
+      url: 'https://example.com',
       authType: 'bearer',
       bearerToken: 'token{{with}}braces{{'
     });
@@ -151,8 +151,8 @@ describe('OtlpCollectorManager', () => {
         }
       })
         .post('/v1/metrics')
-        .reply(200, (uri, requestBody) => {
-          capturedMetricsBody = typeof requestBody === 'string' ? JSON.parse(requestBody) : requestBody;
+        .reply(200, async (req) => {
+          capturedMetricsBody = JSON.parse(await req.text());
           return {};
         });
 
@@ -265,8 +265,8 @@ describe('OtlpCollectorManager', () => {
       nock(baseUrl)
         .post('/v1/metrics')
         .twice()
-        .reply(200, (uri, requestBody) => {
-          const body = typeof requestBody === 'string' ? JSON.parse(requestBody) : requestBody;
+        .reply(200, async (req) => {
+          const body = JSON.parse(await req.text());
           const metrics = body.resourceMetrics[0].scopeMetrics[0].metrics;
           const cpuMetric = metrics.find((m) => m.name === 'process.cpu.time');
           startTimes.push(cpuMetric.sum.dataPoints[0].startTimeUnixNano);

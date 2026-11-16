@@ -88,6 +88,9 @@ const mochaGlobalTeardown = async function() {
 const mochaHooks = {
   beforeEach: async function() {
     tk.reset();
+    if (!nock.isActive()) {
+      nock.activate();
+    }
     nock.disableNetConnect();
     nock.cleanAll();
     await fakeOpcuaServer.beforeEach();

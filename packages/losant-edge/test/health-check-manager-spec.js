@@ -49,7 +49,8 @@ describe('Health Check Manager', function() {
       'content-length': '55',
       'accept-ranges': 'bytes',
       'date': response.headers.date,
-      'connection': 'close'
+      'connection': 'keep-alive',
+      'keep-alive': 'timeout=5'
     });
   });
 
@@ -125,7 +126,8 @@ describe('Health Check Manager', function() {
       'content-length': '54',
       'accept-ranges': 'bytes',
       'date': response.headers.date,
-      'connection': 'close'
+      'connection': 'keep-alive',
+      'keep-alive': 'timeout=5'
     });
 
     fakeGateway.isConnected = () => false;
@@ -149,7 +151,8 @@ describe('Health Check Manager', function() {
       'pragma': 'no-cache',
       'content-length': '55',
       'date': response.headers.date,
-      'connection': 'close'
+      'connection': 'keep-alive',
+      'keep-alive': 'timeout=5'
     });
   });
 

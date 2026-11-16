@@ -509,7 +509,6 @@ const WorkflowManager = (conf, globalStore) => {
   const loadFlowsFromDisk = async (rawInfo) => {
     if (!conf.directory) { return rawInfo; }
     const flows = {};
-    let flowFiles = [];
     let stats;
     try { stats = await fs.stat(conf.directory); } catch {}
     if (!stats || !stats.isDirectory()) {
@@ -517,6 +516,7 @@ const WorkflowManager = (conf, globalStore) => {
       return rawInfo;
     }
 
+    let flowFiles;
     try {
       flowFiles = await fs.readdir(conf.directory);
     } catch {

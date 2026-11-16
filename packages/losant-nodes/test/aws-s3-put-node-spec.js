@@ -5,6 +5,7 @@ import errors from 'losant-nodejs-utils/src/errors.js';
 import { mockClient } from 'aws-sdk-client-mock';
 import { S3 } from 'losant-nodejs-utils/src/utils/s3.js';
 import fs from 'fs-extra';
+import { sleep } from 'omnibelt';
 
 describe('AwsS3PutNode', () => {
   let node, s3Mock;
@@ -207,10 +208,10 @@ describe('AwsS3PutNode', () => {
 
   it('should correctly error when using a bad url', async () => {
     node.fileContentTemplate = '';
-    node.fileUrlTemplate = 'https://files.example.com/000000000000000000000000/Example/000000000000000000000000-deviceExport-1571785189245.csv';
+    node.fileUrlTemplate = 'https://example.com/000000000000000000000000/Example/000000000000000000000000-deviceExport-1571785189245.csv';
     node.fileNameTemplate = 'test.txt';
 
-    nock('https://files.example.com:443', { encodedQueryParams: true })
+    nock('https://example.com:443', { encodedQueryParams: true })
       .get('/000000000000000000000000/Example/000000000000000000000000-deviceExport-1571785189245.csv')
       .reply(404, '<!doctype html>\n<html lang="en">\n<head>\n    <meta charset="utf-8">\n    <title>Page Not Found</title>\n    <meta name="viewport" content="width=device-width, initial-scale=1">\n    <style>\n\n        * {\n            line-height: 1.2;\n            margin: 0;\n        }\n\n        html {\n            color: #888;\n            display: table;\n            font-family: sans-serif;\n            height: 100%;\n            text-align: center;\n            width: 100%;\n        }\n\n        body {\n            display: table-cell;\n            vertical-align: middle;\n            margin: 2em auto;\n        }\n\n        h1 {\n            color: #555;\n            font-size: 2em;\n            font-weight: 400;\n        }\n\n        p {\n            margin: 0 auto;\n            width: 280px;\n        }\n\n        @media only screen and (max-width: 280px) {\n\n            body, p {\n                width: 95%;\n            }\n\n            h1 {\n                font-size: 1.5em;\n                margin: 0 0 0.3em;\n            }\n\n        }\n\n    </style>\n</head>\n<body>\n    <h1>Page Not Found</h1>\n    <p>Sorry, but the page you were trying to view does not exist.</p>\n</body>\n</html>\n<!-- IE needs 512+ bytes: https://blogs.msdn.microsoft.com/ieinternals/2010/08/18/friendly-http-error-pages/ -->');
 
@@ -220,13 +221,15 @@ describe('AwsS3PutNode', () => {
 
   it('should correctly error when a timeout occurs on download', async () => {
     node.fileContentTemplate = '';
-    node.fileUrlTemplate = 'https://files.example.com/000000000000000000000000/Example/000000000000000000000000-deviceExport-1571785189245.csv';
+    node.fileUrlTemplate = 'https://example.com/000000000000000000000000/Example/000000000000000000000000-deviceExport-1571785189245.csv';
     node.fileNameTemplate = 'test.txt';
 
-    nock('https://files.example.com:443', { encodedQueryParams: true })
+    nock('https://example.com:443', { encodedQueryParams: true })
       .get('/000000000000000000000000/Example/000000000000000000000000-deviceExport-1571785189245.csv')
-      .delay(500)
-      .reply(404, '<!doctype html>\n<html lang="en">\n<head>\n    <meta charset="utf-8">\n    <title>Page Not Found</title>\n    <meta name="viewport" content="width=device-width, initial-scale=1">\n    <style>\n\n        * {\n            line-height: 1.2;\n            margin: 0;\n        }\n\n        html {\n            color: #888;\n            display: table;\n            font-family: sans-serif;\n            height: 100%;\n            text-align: center;\n            width: 100%;\n        }\n\n        body {\n            display: table-cell;\n            vertical-align: middle;\n            margin: 2em auto;\n        }\n\n        h1 {\n            color: #555;\n            font-size: 2em;\n            font-weight: 400;\n        }\n\n        p {\n            margin: 0 auto;\n            width: 280px;\n        }\n\n        @media only screen and (max-width: 280px) {\n\n            body, p {\n                width: 95%;\n            }\n\n            h1 {\n                font-size: 1.5em;\n                margin: 0 0 0.3em;\n            }\n\n        }\n\n    </style>\n</head>\n<body>\n    <h1>Page Not Found</h1>\n    <p>Sorry, but the page you were trying to view does not exist.</p>\n</body>\n</html>\n<!-- IE needs 512+ bytes: https://blogs.msdn.microsoft.com/ieinternals/2010/08/18/friendly-http-error-pages/ -->');
+      .reply(async () => {
+        await sleep(500);
+        return [404, '<!doctype html>\n<html lang="en">\n<head>\n    <meta charset="utf-8">\n    <title>Page Not Found</title>\n    <meta name="viewport" content="width=device-width, initial-scale=1">\n    <style>\n\n        * {\n            line-height: 1.2;\n            margin: 0;\n        }\n\n        html {\n            color: #888;\n            display: table;\n            font-family: sans-serif;\n            height: 100%;\n            text-align: center;\n            width: 100%;\n        }\n\n        body {\n            display: table-cell;\n            vertical-align: middle;\n            margin: 2em auto;\n        }\n\n        h1 {\n            color: #555;\n            font-size: 2em;\n            font-weight: 400;\n        }\n\n        p {\n            margin: 0 auto;\n            width: 280px;\n        }\n\n        @media only screen and (max-width: 280px) {\n\n            body, p {\n                width: 95%;\n            }\n\n            h1 {\n                font-size: 1.5em;\n                margin: 0 0 0.3em;\n            }\n\n        }\n\n    </style>\n</head>\n<body>\n    <h1>Page Not Found</h1>\n    <p>Sorry, but the page you were trying to view does not exist.</p>\n</body>\n</html>\n<!-- IE needs 512+ bytes: https://blogs.msdn.microsoft.com/ieinternals/2010/08/18/friendly-http-error-pages/ -->'];
+      });
 
     const result = await node.run({ externalTimeout: 250 }, { accessKey: 'UNGRGWIN2324TON3OWE', secret: 'JGNWR24OTN24OG2IG2OL4' });
     result[1].data.out.should.deepEqual({ error: { type: 'NodeTimeout', message: 'Timeout running AWS S3: Put node' }, success: false });

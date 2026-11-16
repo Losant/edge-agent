@@ -9,7 +9,7 @@
   "dependencies": {
     "license-checker": "^25.0.1",
     "omnibelt": "^4.1.0",
-    "spdx-expression-parse": "^3.0.1"
+    "spdx-expression-parse": "^5.0.0"
   },
   "devDependencies": {
     "should": "^13.2.3"

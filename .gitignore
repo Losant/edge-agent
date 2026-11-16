@@ -16,7 +16,7 @@ coverage
 packages/*/node_modules
 packages/*/tmp
 packages/*/data
-
+**/store-db/**
 # losant-edge runtime/test artifacts
 packages/losant-edge/losant-edge-agent-config.toml
 packages/losant-edge/losant-edge-agent-store.db/

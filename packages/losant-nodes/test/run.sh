@@ -56,6 +56,7 @@ export NODE_ENV=test
 export TZ=UTC
 export RAW_FUNCTION_INSTANCES=1
 export SNOWFLAKE_DISABLE_PLATFORM_DETECTION=true
+export AWS_EC2_METADATA_DISABLED=true
 
 scriptDir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 nodesDir=$(CDPATH= cd -- "$scriptDir/.." && pwd)

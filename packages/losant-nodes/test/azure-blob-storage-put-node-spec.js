@@ -2,6 +2,7 @@ import { nock, contextify, protectedDiskUtils } from './common.js';
 import AzureBlobStoragePutNode from '../src/azure-blob-storage-put-node.js';
 import errors from 'losant-nodejs-utils/src/errors.js';
 import fs from 'fs-extra';
+import { sleep } from 'omnibelt';
 
 describe('AzureBlobStoragePutNode', () => {
   describe('reading from a local path', async () => {
@@ -166,7 +167,7 @@ describe('AzureBlobStoragePutNode', () => {
   });
 
   it('should correctly error when using a bad url', async () => {
-    nock('https://files.example.com:443', { encodedQueryParams: true })
+    nock('https://example.com:443', { encodedQueryParams: true })
       .get('/000000000000000000000000/Example/000000000000000000000000-deviceExport-1571785189245.csv')
       .reply(404, '<!doctype html>\n<html lang="en">\n<head>\n    <meta charset="utf-8">\n    <title>Page Not Found</title>\n    <meta name="viewport" content="width=device-width, initial-scale=1">\n    <style>\n\n        * {\n            line-height: 1.2;\n            margin: 0;\n        }\n\n        html {\n            color: #888;\n            display: table;\n            font-family: sans-serif;\n            height: 100%;\n            text-align: center;\n            width: 100%;\n        }\n\n        body {\n            display: table-cell;\n            vertical-align: middle;\n            margin: 2em auto;\n        }\n\n        h1 {\n            color: #555;\n            font-size: 2em;\n            font-weight: 400;\n        }\n\n        p {\n            margin: 0 auto;\n            width: 280px;\n        }\n\n        @media only screen and (max-width: 280px) {\n\n            body, p {\n                width: 95%;\n            }\n\n            h1 {\n                font-size: 1.5em;\n                margin: 0 0 0.3em;\n            }\n\n        }\n\n    </style>\n</head>\n<body>\n    <h1>Page Not Found</h1>\n    <p>Sorry, but the page you were trying to view does not exist.</p>\n</body>\n</html>\n<!-- IE needs 512+ bytes: https://blogs.msdn.microsoft.com/ieinternals/2010/08/18/friendly-http-error-pages/ -->');
 
@@ -177,16 +178,18 @@ describe('AzureBlobStoragePutNode', () => {
       containerNameTemplate: 'bingo',
       blobNameTemplate: 'test.txt',
       contentTypeTemplate: 'text/plain',
-      blobUrlTemplate: 'https://files.example.com/000000000000000000000000/Example/000000000000000000000000-deviceExport-1571785189245.csv'
+      blobUrlTemplate: 'https://example.com/000000000000000000000000/Example/000000000000000000000000-deviceExport-1571785189245.csv'
     }).run({}, {});
     result[1].out.should.deepEqual({ error: 'Request failed with status code 404', success: false });
   });
 
   it('should correctly error when a timeout occurs on download', async () => {
-    nock('https://files.example.com:443', { encodedQueryParams: true })
+    nock('https://example.com:443', { encodedQueryParams: true })
       .get('/000000000000000000000000/Example/000000000000000000000000-deviceExport-1571785189245.csv')
-      .delay(500)
-      .reply(404, '<!doctype html>\n<html lang="en">\n<head>\n    <meta charset="utf-8">\n    <title>Page Not Found</title>\n    <meta name="viewport" content="width=device-width, initial-scale=1">\n    <style>\n\n        * {\n            line-height: 1.2;\n            margin: 0;\n        }\n\n        html {\n            color: #888;\n            display: table;\n            font-family: sans-serif;\n            height: 100%;\n            text-align: center;\n            width: 100%;\n        }\n\n        body {\n            display: table-cell;\n            vertical-align: middle;\n            margin: 2em auto;\n        }\n\n        h1 {\n            color: #555;\n            font-size: 2em;\n            font-weight: 400;\n        }\n\n        p {\n            margin: 0 auto;\n            width: 280px;\n        }\n\n        @media only screen and (max-width: 280px) {\n\n            body, p {\n                width: 95%;\n            }\n\n            h1 {\n                font-size: 1.5em;\n                margin: 0 0 0.3em;\n            }\n\n        }\n\n    </style>\n</head>\n<body>\n    <h1>Page Not Found</h1>\n    <p>Sorry, but the page you were trying to view does not exist.</p>\n</body>\n</html>\n<!-- IE needs 512+ bytes: https://blogs.msdn.microsoft.com/ieinternals/2010/08/18/friendly-http-error-pages/ -->');
+      .reply(async () => {
+        await sleep(500);
+        return [404, '<!doctype html>\n<html lang="en">\n<head>\n    <meta charset="utf-8">\n    <title>Page Not Found</title>\n    <meta name="viewport" content="width=device-width, initial-scale=1">\n    <style>\n\n        * {\n            line-height: 1.2;\n            margin: 0;\n        }\n\n        html {\n            color: #888;\n            display: table;\n            font-family: sans-serif;\n            height: 100%;\n            text-align: center;\n            width: 100%;\n        }\n\n        body {\n            display: table-cell;\n            vertical-align: middle;\n            margin: 2em auto;\n        }\n\n        h1 {\n            color: #555;\n            font-size: 2em;\n            font-weight: 400;\n        }\n\n        p {\n            margin: 0 auto;\n            width: 280px;\n        }\n\n        @media only screen and (max-width: 280px) {\n\n            body, p {\n                width: 95%;\n            }\n\n            h1 {\n                font-size: 1.5em;\n                margin: 0 0 0.3em;\n            }\n\n        }\n\n    </style>\n</head>\n<body>\n    <h1>Page Not Found</h1>\n    <p>Sorry, but the page you were trying to view does not exist.</p>\n</body>\n</html>\n<!-- IE needs 512+ bytes: https://blogs.msdn.microsoft.com/ieinternals/2010/08/18/friendly-http-error-pages/ -->'];
+      });
 
     const result = await new AzureBlobStoragePutNode('id', [[4]], {
       destination: 'out',
@@ -196,7 +199,7 @@ describe('AzureBlobStoragePutNode', () => {
       blobNameTemplate: 'test.txt',
       contentTypeTemplate: 'text/plain',
 
-      blobUrlTemplate: 'https://files.example.com/000000000000000000000000/Example/000000000000000000000000-deviceExport-1571785189245.csv'
+      blobUrlTemplate: 'https://example.com/000000000000000000000000/Example/000000000000000000000000-deviceExport-1571785189245.csv'
     }).run({ externalTimeout: 250 }, {});
     result[1].out.should.deepEqual({ error: { type: 'NodeTimeout', message: 'Timeout running Azure Blob Storage: Put node' }, success: false });
   });

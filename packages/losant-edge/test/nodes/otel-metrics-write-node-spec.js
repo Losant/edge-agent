@@ -10,7 +10,7 @@ import OtelMetricsWriteNode from '../../src/nodes/otel-metrics-write-node.js';
 const OUTPUT_IDS = [['out']];
 const FROZEN_MS = 1700000000000;
 const FROZEN_NANO = '1700000000000000000';
-const COLLECTOR_URL = 'http://collector.example.com:4318';
+const COLLECTOR_URL = 'http://example.com';
 const METRICS_PATH = '/v1/metrics';
 
 describe('OtelMetricsWriteNode', () => {
@@ -43,8 +43,11 @@ describe('OtelMetricsWriteNode', () => {
     nock(COLLECTOR_URL)
       .persist()
       .post(METRICS_PATH)
-      .reply(function(uri, body) {
-        requests.push({ url: uri, headers: { ...this.req.headers }, body });
+      .reply(async function(req) {
+        let body = await req.text();
+        try { body = JSON.parse(body); } catch {}
+        const url = new URL(req.url);
+        requests.push({ url: url.pathname, headers: Object.fromEntries(req.headers.entries()), body });
         return respond();
       });
     context = { externalTimeout: 5000, diskUtils: { loadGuardedFile } };
@@ -368,8 +371,10 @@ describe('OtelMetricsWriteNode', () => {
     // OTEL_EXPORTER_OTLP_ENDPOINT may carry a path prefix, which is how a
     // collector behind an ingress or api gateway is addressed.
     it('appends the metrics path under a configured path prefix', async () => {
-      nock(COLLECTOR_URL).post(`/otlp${METRICS_PATH}`).reply(function(uri, body) {
-        requests.push({ url: uri, headers: { ...this.req.headers }, body });
+      nock(COLLECTOR_URL).post(`/otlp${METRICS_PATH}`).reply(async function(req) {
+        const body = await req.text();
+        const url = new URL(req.url);
+        requests.push({ url: url.pathname, headers: Object.fromEntries(req.headers.entries()), body });
         return [200, {}];
       });
       const [, payload] = await buildNode({
@@ -391,29 +396,34 @@ describe('OtelMetricsWriteNode', () => {
     // 4318 is only the OTLP convention, not a requirement - a collector reached
     // through a gateway or a port mapping answers wherever it was put.
     it('posts to a non-standard port', async () => {
-      nock('https://collector.example.com:18080').post(METRICS_PATH).reply(function(uri, body) {
-        requests.push({ url: uri, headers: { ...this.req.headers }, body });
-        return [200, {}];
-      });
+      nock('https://example.com:4319')
+        .post(METRICS_PATH)
+        .reply(async function(req) {
+          const body = await req.text();
+          const url = new URL(req.url);
+          requests.push({ url: url.pathname, headers: Object.fromEntries(req.headers.entries()), body });
+          return [200, {}];
+        });
       const [, payload] = await buildNode({
-        collectorUrlTemplate: 'https://collector.example.com:18080', customMetrics: oneGauge()
+        collectorUrlTemplate: 'https://example.com:4319', customMetrics: oneGauge()
       }).run(context, {});
 
       payload.working.otelResult.should.deepEqual({ success: true, metricCount: 1 });
       requests[0].url.should.equal(METRICS_PATH);
       // The port rides through to the request, not just past validation.
-      requests[0].headers.host.should.equal('collector.example.com:18080');
+      requests[0].headers.host.should.equal('example.com:4319');
     });
 
     // The parser drops the default port, so the host the request goes to is not
     // spelled the way it was configured. That is normalization, not a mistake.
     it('accepts a url carrying the default port for its scheme', async () => {
-      nock('http://collector.example.com').post(METRICS_PATH).reply(function(uri, body) {
-        requests.push({ url: uri, headers: { ...this.req.headers }, body });
+      nock('http://example.com').post(METRICS_PATH).reply(async function(req) {
+        const body = await req.text();
+        requests.push({ url: req.path, headers: Object.fromEntries(req.headers.entries()), body });
         return [200, {}];
       });
       const [, payload] = await buildNode({
-        collectorUrlTemplate: 'http://collector.example.com:80', customMetrics: oneGauge()
+        collectorUrlTemplate: 'http://example.com:80', customMetrics: oneGauge()
       }).run(context, {});
       payload.working.otelResult.should.deepEqual({ success: true, metricCount: 1 });
     });
@@ -462,7 +472,7 @@ describe('OtelMetricsWriteNode', () => {
       await buildNode({ collectorUrlTemplate: `${COLLECTOR_URL}#frag`, customMetrics: oneGauge() })
         .run(context, {}).should.be.rejectedWith({ message: 'Collector URL must not contain a fragment.' });
       await buildNode({
-        collectorUrlTemplate: 'http://user:pw@collector.example.com:4318', customMetrics: oneGauge()
+        collectorUrlTemplate: 'http://user:pw@example.com:4318', customMetrics: oneGauge()
       }).run(context, {}).should.be.rejectedWith(/must not contain embedded credentials/);
       requests.should.have.length(0);
     });
@@ -823,7 +833,7 @@ describe('OtelMetricsWriteNode', () => {
 
     it('errors on a non-http protocol, so a template cannot switch schemes', async () => {
       await buildNode({
-        collectorUrlTemplate: 'ftp://collector.example.com', customMetrics: oneGauge()
+        collectorUrlTemplate: 'ftp://example.com', customMetrics: oneGauge()
       }).run(context, {}).should.be.rejectedWith({ message: /protocol must be http:, https:/ });
       requests.should.have.length(0);
     });
