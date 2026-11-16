@@ -10,7 +10,7 @@
   },
   "type": "module",
   "engines": {
-    "node": "26.13.0"
+    "node": "26.13.1"
   },
   "exports": {
     "./package.json": "./package.json",
@@ -18,14 +18,14 @@
     "./test/*.js": "./test/*.js"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1161.0",
-    "@aws-sdk/lib-storage": "^3.1161.0",
-    "@aws-sdk/s3-presigned-post": "^3.1161.0",
-    "@aws-sdk/s3-request-presigner": "^3.1161.0",
+    "@aws-sdk/client-s3": "^3.1169.0",
+    "@aws-sdk/lib-storage": "^3.1169.0",
+    "@aws-sdk/s3-presigned-post": "^3.1169.0",
+    "@aws-sdk/s3-request-presigner": "^3.1169.0",
     "@azure/storage-blob": "12.27.0",
     "@google-cloud/storage": "^7.22.0",
-    "axios": "^1.21.0",
-    "bson": "^7.3.3",
+    "axios": "^1.21.1",
+    "bson": "^7.3.4",
     "csv-parse": "^7.0.3",
     "csv-stringify": "^6.9.0",
     "error": "^7.2.1",

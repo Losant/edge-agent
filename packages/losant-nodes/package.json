@@ -11,7 +11,7 @@
   "main": "src/index.js",
   "type": "module",
   "engines": {
-    "node": "26.13.0"
+    "node": "26.13.1"
   },
   "exports": {
     ".": "./src/index.js",
@@ -20,8 +20,8 @@
     "./test/*.js": "./test/*.js"
   },
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.1161.0",
-    "@aws-sdk/client-sqs": "^3.1161.0",
+    "@aws-sdk/client-lambda": "^3.1169.0",
+    "@aws-sdk/client-sqs": "^3.1169.0",
     "@azure/data-tables": "13.3.0",
     "@azure/event-hubs": "^6.0.4",
     "@datadog/datadog-api-client": "^1.64.0",
@@ -31,9 +31,9 @@
     "@peculiar/asn1-x509": "^2.11.1",
     "@peculiar/x509": "^2.2.0",
     "@sendgrid/mail": "^8.1.6",
-    "@smithy/node-http-handler": "^4.14.1",
+    "@smithy/node-http-handler": "^4.14.2",
     "addressparser": "^1.0.1",
-    "basic-ftp": "^6.2.5",
+    "basic-ftp": "^6.2.6",
     "cacheable-lookup": "^7.0.0",
     "cbor-x": "^1.6.9",
     "cheerio": "^1.2.0",
@@ -55,14 +55,14 @@
     "losant-sandcastle": "workspace:*",
     "moment-timezone": "^0.6.6",
     "mongodb": "~7.1.1",
-    "mssql": "^12.7.13",
+    "mssql": "^12.7.14",
     "mysql": "~2.18.1",
     "nanoid": "^5.1.16",
     "omnibelt": "^4.1.0",
     "particle-api-js": "^11.1.7",
     "pem": "^1.14.8",
     "pg": "^8.23.1",
-    "phone": "^3.1.72",
+    "phone": "^3.1.73",
     "qs": "^6.17.1",
     "reflect-metadata": "^0.2.2",
     "retry": "^0.13.1",
@@ -75,7 +75,7 @@
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
-    "@aws-sdk/client-s3": "^3.1161.0",
+    "@aws-sdk/client-s3": "^3.1169.0",
     "aws-sdk-client-mock": "^4.1.0",
     "common-tags": "^1.8.2",
     "ftp-srv": "^4.6.3",

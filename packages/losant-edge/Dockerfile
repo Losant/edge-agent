@@ -1,4 +1,4 @@
-FROM node:26.13.0-trixie AS builder
+FROM node:26.13.1-trixie AS builder
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME/bin:$PATH"
 
@@ -30,7 +30,7 @@ RUN pnpm rebuild classic-level
 RUN rm -rf pnpm-lock.yaml pnpm-workspace.yaml scripts
 
 # ok, now that things are built and installed, lets make the actual docker image
-FROM node:26.13.0-trixie
+FROM node:26.13.1-trixie
 ARG ROLLBAR_KEY
 VOLUME /data
 EXPOSE $WEBSERVER_PORT_DEFAULT
