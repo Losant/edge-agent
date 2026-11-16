@@ -1396,6 +1396,7 @@ describe('HttpNode', () => {
       httpsServer = https.createServer(options, (req, res) => {
         res.writeHead(200);
         const writer = () => {
+          if (res.destroyed) { return; }
           res.write(fakeClientKey+fakeClientKey+fakeClientKey+fakeClientKey, writer);
         };
         writer();
