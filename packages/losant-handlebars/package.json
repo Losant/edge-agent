@@ -11,7 +11,7 @@
   "main": "src/index.js",
   "type": "module",
   "engines": {
-    "node": "26.13.0"
+    "node": "26.13.1"
   },
   "exports": {
     ".": "./src/index.js",
@@ -32,7 +32,7 @@
     "nmea-0183": "github:nherment/node-nmea#07d805d",
     "omnibelt": "^4.1.0",
     "qs": "^6.17.1",
-    "re2": "^1.27.0",
+    "re2": "^1.27.1",
     "updeep": "^1.2.4",
     "xml-js": "^1.6.11"
   }
