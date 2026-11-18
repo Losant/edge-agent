@@ -1,4 +1,5 @@
 import { Storage as GCStorage } from '@google-cloud/storage';
+import { JWT } from 'google-auth-library';
 import errors from '../errors.js';
 import {
   includes, clone, isEmpty,
@@ -18,6 +19,8 @@ const CANNOT_CONNECT_ERROR = errors.Validation({ message: 'Could not connect to 
 
 const RESUMABLE_THRESHOLD = 5000000;
 
+const ACTION_TO_HTTP_METHOD = { read: 'GET', write: 'PUT', delete: 'DELETE', resumable: 'POST' };
+
 const isServerError = (error) => {
   return (error.response && error.response.statusCode >= 500) || error.code === 'ETIMEDOUT';
 };
@@ -26,6 +29,40 @@ const isNotFoundError = (err) => {
 };
 
 const transformError = transformErrorCurry('gcs', { isNotFoundError, isServerError });
+
+// The following helpers port @google-cloud/storage's own internal signing logic
+// (src/util.js, src/signer.js#getSignedUrlV2, src/file.js#generateSignedPostPolicyV2)
+// so we can sign directly with the service account private key. We can't use the
+// library's own file.getSignedUrl()/generateSignedPostPolicyV2() for this: they
+// resolve the GoogleAccessId via authClient.getCredentials(), which only works
+// when GoogleAuth was constructed with its now-deprecated `credentials` option.
+const fixedEncodeURIComponent = (str) => {
+  return encodeURIComponent(str).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+};
+const gcsEncodeURI = (uri, encodeSlash) => {
+  return uri.split('/').map(fixedEncodeURIComponent).join(encodeSlash ? '%2F' : '/');
+};
+const gcsQsStringify = (queryObj) => {
+  return Object.keys(queryObj)
+    .map((key) => `${gcsEncodeURI(key, true)}=${gcsEncodeURI(String(queryObj[key]), true)}`)
+    .join('&');
+};
+const getCanonicalHeaders = (headers = {}) => {
+  return Object.keys(headers)
+    .map((name) => [name.toLowerCase(), headers[name]])
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .filter(([, value]) => value !== undefined)
+    .map(([name, value]) => `${name}:${String(value).trim().replace(/\s{2,}/g, ' ')}\n`)
+    .join('');
+};
+const getResourcePath = (cname, bucket, file) => {
+  if (cname) { return `/${file || ''}`; }
+  if (file) { return `/${bucket}/${file}`; }
+  return `/${bucket}`;
+};
+const signWithPrivateKey = (privateKey, data) => {
+  return crypto.createSign('RSA-SHA256').update(data).sign(privateKey, 'base64');
+};
 
 const GcsStorage = (config = {}) => {
   // this will unwrap keyJson if coming from application beforeSave
@@ -47,8 +84,26 @@ const GcsStorage = (config = {}) => {
   if (!config.credentials || !config.credentials.client_email || !config.credentials.private_key) {
     config.credentials = getCreds(config);
   }
+  // Built directly from the service account's email/key via the JWT constructor,
+  // per google-auth-library's own guidance, instead of GoogleAuth's deprecated
+  // `credentials` option. Used only for regular API calls (list/get/put/delete) -
+  // all signed-URL/policy generation below signs with the private key directly.
+  // Scopes match what Storage applies internally when it builds its own default
+  // auth client from `credentials`.
+  const authClient = new JWT({
+    email: config.credentials.client_email,
+    key: config.credentials.private_key,
+    scopes: [
+      'https://www.googleapis.com/auth/iam',
+      'https://www.googleapis.com/auth/cloud-platform',
+      'https://www.googleapis.com/auth/devstorage.full_control'
+    ]
+  });
 
-  const gcs = new GCStorage(config);
+  const gcs = new GCStorage({
+    authClient,
+    projectId: config.projectId || config.credentials.project_id
+  });
 
   const getFile = (filename, bucketName) => {
     const bucket = gcs.bucket(bucketName);
@@ -128,13 +183,50 @@ const GcsStorage = (config = {}) => {
     }
   };
 
+  // Ports signer.js#getSignedUrlV2 + file.js#getSignedUrl's option handling.
   const signUrl = (action, expiresDefault) => {
     return async (filename, bucket, options = {}) => {
-      const file = getFile(filename, bucket);
-      const expires = (Date.now() + (options.expires || expiresDefault));
+      const method = ACTION_TO_HTTP_METHOD[action];
+      const expiresInSeconds = Math.floor((Date.now() + (options.expires || expiresDefault)) / 1000);
+
+      const extensionHeaders = {};
+      Object.keys(options.extensionHeaders || {}).forEach((key) => {
+        extensionHeaders[key.toLowerCase()] = options.extensionHeaders[key];
+      });
+
+      const queryParams = { ...options.queryParams };
+      if (typeof options.responseType === 'string') {
+        queryParams['response-content-type'] = options.responseType;
+      }
       const promptSaveAs = options.promptSaveAs || filename.substring(filename.lastIndexOf('/')+1);
-      const opts = { ...options, expires, action, promptSaveAs, cname: bucketToDomainMap[bucket] };
-      return (await file.getSignedUrl(opts))[0];
+      queryParams['response-content-disposition'] = `attachment; filename="${promptSaveAs}"`;
+      if (typeof options.responseDisposition === 'string') {
+        queryParams['response-content-disposition'] = options.responseDisposition;
+      }
+
+      const cname = options.cname || bucketToDomainMap[bucket];
+      const encodedFile = gcsEncodeURI(filename, false);
+      const canonicalHeadersString = getCanonicalHeaders(extensionHeaders);
+      const stringToSign = [
+        method,
+        options.contentMd5 || '',
+        options.contentType || '',
+        expiresInSeconds,
+        canonicalHeadersString + getResourcePath(false, bucket, encodedFile)
+      ].join('\n');
+      const signature = signWithPrivateKey(config.credentials.private_key, stringToSign);
+
+      // Key order matches signer.js's `Object.assign({GoogleAccessId, Expires,
+      // Signature}, cfg.queryParams)`, which appends extra params after the
+      // core three rather than merging them in first.
+      const query = {
+        GoogleAccessId: config.credentials.client_email,
+        Expires: expiresInSeconds,
+        Signature: signature,
+        ...queryParams
+      };
+      const host = cname || 'https://storage.googleapis.com';
+      return `${host}${getResourcePath(!!cname, bucket, encodedFile)}?${gcsQsStringify(query)}`;
     };
   };
 
@@ -176,12 +268,18 @@ const GcsStorage = (config = {}) => {
 
   const getDownloadSignedUrl = signUrl('read', DEFAULT_DOWNLOAD_EXPIRES);
 
+  // Ports file.js#generateSignedPostPolicyV2.
   const getPostSignedUrl = async (filename, bucket, options = {}) => {
-    const file = await getFile(filename, bucket);
-    const { base64, signature } = await file.generateSignedPostPolicyV2({
-      expires: Date.now() + (options.expires || DEFAULT_UPLOAD_EXPIRES),
-      equals: [ [ '$Content-Type', options.contentType ] ]
-    });
+    const expires = new Date(Date.now() + (options.expires || DEFAULT_UPLOAD_EXPIRES));
+    const conditions = [
+      ['eq', '$key', filename],
+      { bucket }
+    ];
+    if (options.contentType) {
+      conditions.push(['eq', '$Content-Type', options.contentType]);
+    }
+    const policyBase64 = Buffer.from(JSON.stringify({ expiration: expires.toISOString(), conditions })).toString('base64');
+    const signature = signWithPrivateKey(config.credentials.private_key, policyBase64);
 
     return {
       url: bucketToDomainMap[bucket] || `https://storage.googleapis.com/${bucket}`,
@@ -190,7 +288,7 @@ const GcsStorage = (config = {}) => {
         'key': filename,
         'Content-Type': options.contentType,
         bucket,
-        'policy': base64,
+        'policy': policyBase64,
         signature
       }
     };
