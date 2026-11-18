@@ -22,7 +22,9 @@ const RESUMABLE_THRESHOLD = 5000000;
 const ACTION_TO_HTTP_METHOD = { read: 'GET', write: 'PUT', delete: 'DELETE', resumable: 'POST' };
 
 const isServerError = (error) => {
-  return (error.response && error.response.statusCode >= 500) || error.code === 'ETIMEDOUT';
+  // gaxios (used internally by @google-cloud/storage as of v9) exposes the HTTP
+  // status as response.status (fetch-style), not response.statusCode
+  return (error.response && (error.response.status || error.response.statusCode) >= 500) || error.code === 'ETIMEDOUT';
 };
 const isNotFoundError = (err) => {
   return err && (includes('No such object', err.message) || err.code === 404);
@@ -102,7 +104,11 @@ const GcsStorage = (config = {}) => {
 
   const gcs = new GCStorage({
     authClient,
-    projectId: config.projectId || config.credentials.project_id
+    projectId: config.projectId || config.credentials.project_id,
+    // this module already retries uploads/puts itself (uploadStreamByDiskCurry,
+    // timescale.saveBlob); the SDK's own autoRetry fights with that retry logic
+    // on non-resumable writes and can leave a request promise unobserved
+    retryOptions: { autoRetry: false }
   });
 
   const getFile = (filename, bucketName) => {
