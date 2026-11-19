@@ -138,6 +138,7 @@ class TwilioSmsNode {
 
       sentNumbers.add(toNumber.parsed);
       let result;
+      let timedOut = false;
       try {
         await timeoutP(timeLeft, client.messages.create({
           ...sms,
@@ -145,14 +146,16 @@ class TwilioSmsNode {
         }));
         result = { number: toNumber.parsed, success: true };
       } catch (err) {
+        timedOut = isTimeoutError(err);
         result = {
           error: true,
           number: toNumber.parsed,
-          message: isTimeoutError(err) ? 'Timeout' : (err.message || `${err.status} Error from Twilio`)
+          message: timedOut ? 'Timeout' : (err.message || `${err.status} Error from Twilio`)
         };
       }
 
-      timeLeft = maxAllowedTime - (Date.now() - start);
+      // Timers can fire a millisecond early; a timeout means the budget is spent.
+      timeLeft = timedOut ? 0 : maxAllowedTime - (Date.now() - start);
       return result;
     }, toNumbers);
 
