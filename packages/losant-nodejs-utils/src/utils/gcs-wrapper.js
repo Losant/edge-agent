@@ -1,4 +1,5 @@
 import { Storage as GCStorage } from '@google-cloud/storage';
+import { JWT, GoogleAuth } from 'google-auth-library';
 import errors from '../errors.js';
 import {
   includes, clone, isEmpty,
@@ -19,13 +20,36 @@ const CANNOT_CONNECT_ERROR = errors.Validation({ message: 'Could not connect to 
 const RESUMABLE_THRESHOLD = 5000000;
 
 const isServerError = (error) => {
-  return (error.response && error.response.statusCode >= 500) || error.code === 'ETIMEDOUT';
+  // gaxios (used internally by @google-cloud/storage as of v9) exposes the HTTP
+  // status as response.status (fetch-style), not response.statusCode
+  return (error.response && (error.response.status || error.response.statusCode) >= 500) || error.code === 'ETIMEDOUT';
 };
 const isNotFoundError = (err) => {
   return err && (includes('No such object', err.message) || err.code === 404);
 };
 
 const transformError = transformErrorCurry('gcs', { isNotFoundError, isServerError });
+
+// GoogleAuth#getClient() and #sign() both special-case a directly-injected JWT
+// client (it carries its own key, so there's nothing to resolve via ADC/GCE
+// metadata), but GoogleAuth#getCredentialsAsync() doesn't - it only resolves
+// client_email/private_key via the deprecated `credentials` constructor option,
+// Impersonated, BaseExternalAccountClient, or GCE metadata, so it throws
+// NO_CREDENTIALS_FOUND for a plain JWT authClient. @google-cloud/storage's
+// signer.js/file.js call exactly this method (`authClient.getCredentials()`) to
+// resolve GoogleAccessId for signed URLs/policies, which breaks
+// file.getSignedUrl()/generateSignedPostPolicyV2() once Storage is built from a
+// JWT instance (google-auth-library's own replacement for the deprecated
+// `credentials` option, used below). Patch in the missing branch - JWT already
+// has its own getCredentials() - so the SDK's own signing works as intended.
+const originalGetCredentialsAsync = GoogleAuth.prototype.getCredentialsAsync;
+GoogleAuth.prototype.getCredentialsAsync = async function getCredentialsAsync() {
+  const client = await this.getClient();
+  if (client instanceof JWT) {
+    return client.getCredentials();
+  }
+  return originalGetCredentialsAsync.call(this);
+};
 
 const GcsStorage = (config = {}) => {
   // this will unwrap keyJson if coming from application beforeSave
@@ -47,8 +71,28 @@ const GcsStorage = (config = {}) => {
   if (!config.credentials || !config.credentials.client_email || !config.credentials.private_key) {
     config.credentials = getCreds(config);
   }
+  // Built directly from the service account's email/key via the JWT constructor,
+  // per google-auth-library's own guidance, instead of GoogleAuth's deprecated
+  // `credentials` option. Scopes match what Storage applies internally when it
+  // builds its own default auth client from `credentials`.
+  const authClient = new JWT({
+    email: config.credentials.client_email,
+    key: config.credentials.private_key,
+    scopes: [
+      'https://www.googleapis.com/auth/iam',
+      'https://www.googleapis.com/auth/cloud-platform',
+      'https://www.googleapis.com/auth/devstorage.full_control'
+    ]
+  });
 
-  const gcs = new GCStorage(config);
+  const gcs = new GCStorage({
+    authClient,
+    projectId: config.projectId || config.credentials.project_id,
+    // this module already retries uploads/puts itself (uploadStreamByDiskCurry,
+    // timescale.saveBlob); the SDK's own autoRetry fights with that retry logic
+    // on non-resumable writes and can leave a request promise unobserved
+    retryOptions: { autoRetry: false }
+  });
 
   const getFile = (filename, bucketName) => {
     const bucket = gcs.bucket(bucketName);
@@ -177,11 +221,13 @@ const GcsStorage = (config = {}) => {
   const getDownloadSignedUrl = signUrl('read', DEFAULT_DOWNLOAD_EXPIRES);
 
   const getPostSignedUrl = async (filename, bucket, options = {}) => {
-    const file = await getFile(filename, bucket);
-    const { base64, signature } = await file.generateSignedPostPolicyV2({
-      expires: Date.now() + (options.expires || DEFAULT_UPLOAD_EXPIRES),
-      equals: [ [ '$Content-Type', options.contentType ] ]
-    });
+    const file = getFile(filename, bucket);
+    const expires = Date.now() + (options.expires || DEFAULT_UPLOAD_EXPIRES);
+    const policyOptions = { expires };
+    if (options.contentType) {
+      policyOptions.equals = ['$Content-Type', options.contentType];
+    }
+    const [policy] = await file.generateSignedPostPolicyV2(policyOptions);
 
     return {
       url: bucketToDomainMap[bucket] || `https://storage.googleapis.com/${bucket}`,
@@ -190,8 +236,8 @@ const GcsStorage = (config = {}) => {
         'key': filename,
         'Content-Type': options.contentType,
         bucket,
-        'policy': base64,
-        signature
+        'policy': policy.base64,
+        'signature': policy.signature
       }
     };
   };

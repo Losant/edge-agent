@@ -18,14 +18,9 @@ describe('GoogleCloudStorageGetNode', () => {
   });
 
   it('should properly receive a 404', async () => {
-    nock('https://www.googleapis.com:443', { encodedQueryParams: true })
-      .post('/oauth2/v4/token')
-      .reply(200, ['1f8b0800000000000013ab564a4c4e4e2d2e8e2fc9cf4ecd53b252aa4c34b2d44b4bcc4ed58588e828a556146416a516c76702a58d4d2d2d7594c032f1259505a9400d4ea98945a9454ab50031448f984a000000'], [
-        'Content-Type',
-        'application/json; charset=UTF-8',
-        'Content-Encoding',
-        'gzip'
-      ]);
+    nock('https://oauth2.googleapis.com:443', { encodedQueryParams: true })
+      .post('/token')
+      .reply(200, { access_token: 'ya29.fake-token', expires_in: 3600, token_type: 'Bearer' }, ['Content-Type', 'application/json; charset=utf-8']);
 
     nock('https://storage.googleapis.com:443', { encodedQueryParams: true })
       .get('/storage/v1/b/test-bucket/o/test.txt')
@@ -36,14 +31,9 @@ describe('GoogleCloudStorageGetNode', () => {
   });
 
   it('should read a file', async () => {
-    nock('https://www.googleapis.com:443', { encodedQueryParams: true })
-      .post('/oauth2/v4/token')
-      .reply(200, ['1f8b0800000000000013ab564a4c4e4e2d2e8e2fc9cf4ecd53b252aa4c34b2d44b4bcc4ed58588e828a556146416a516c76702a58d4d2d2d7594c032f1259505a9400d4ea98945a9454ab50031448f984a000000'], [
-        'Content-Type',
-        'application/json; charset=UTF-8',
-        'Content-Encoding',
-        'gzip'
-      ]);
+    nock('https://oauth2.googleapis.com:443', { encodedQueryParams: true })
+      .post('/token')
+      .reply(200, { access_token: 'ya29.fake-token', expires_in: 3600, token_type: 'Bearer' }, ['Content-Type', 'application/json; charset=utf-8']);
 
     nock('https://storage.googleapis.com:443', { encodedQueryParams: true })
       .get('/storage/v1/b/test-bucket/o/test.txt').times(1)
@@ -112,14 +102,9 @@ describe('GoogleCloudStorageGetNode', () => {
     it('should read a file', async () => {
       node.encodingTemplate = 'utf8';
       node.diskPathTemplate = './foo.txt';
-      nock('https://www.googleapis.com:443', { encodedQueryParams: true })
-        .post('/oauth2/v4/token')
-        .reply(200, ['1f8b0800000000000013ab564a4c4e4e2d2e8e2fc9cf4ecd53b252aa4c34b2d44b4bcc4ed58588e828a556146416a516c76702a58d4d2d2d7594c032f1259505a9400d4ea98945a9454ab50031448f984a000000'], [
-          'Content-Type',
-          'application/json; charset=UTF-8',
-          'Content-Encoding',
-          'gzip'
-        ]);
+      nock('https://oauth2.googleapis.com:443', { encodedQueryParams: true })
+        .post('/token')
+        .reply(200, { access_token: 'ya29.fake-token', expires_in: 3600, token_type: 'Bearer' }, ['Content-Type', 'application/json; charset=utf-8']);
 
       nock('https://storage.googleapis.com:443', { encodedQueryParams: true })
         .get('/storage/v1/b/test-bucket/o/test.txt').times(1)
@@ -178,14 +163,9 @@ describe('GoogleCloudStorageGetNode', () => {
       fs.mkdirSync(readOnlyDir, { recursive: true });
       node.encodingTemplate = 'hex';
       node.diskPathTemplate = readOnlyDir;
-      nock('https://www.googleapis.com:443', { encodedQueryParams: true })
-        .post('/oauth2/v4/token')
-        .reply(200, ['1f8b0800000000000013ab564a4c4e4e2d2e8e2fc9cf4ecd53b252aa4c34b2d44b4bcc4ed58588e828a556146416a516c76702a58d4d2d2d7594c032f1259505a9400d4ea98945a9454ab50031448f984a000000'], [
-          'Content-Type',
-          'application/json; charset=UTF-8',
-          'Content-Encoding',
-          'gzip'
-        ]);
+      nock('https://oauth2.googleapis.com:443', { encodedQueryParams: true })
+        .post('/token')
+        .reply(200, { access_token: 'ya29.fake-token', expires_in: 3600, token_type: 'Bearer' }, ['Content-Type', 'application/json; charset=utf-8']);
 
       nock('https://storage.googleapis.com:443', { encodedQueryParams: true })
         .get('/storage/v1/b/test-bucket/o/test.txt').times(1)
@@ -241,14 +221,9 @@ describe('GoogleCloudStorageGetNode', () => {
       node.diskPathTemplate = './foo.txt';
       node.errorIfFileExists = true;
       fs.writeFileSync(node.diskPathTemplate, 'foo bar bat');
-      nock('https://www.googleapis.com:443', { encodedQueryParams: true })
-        .post('/oauth2/v4/token')
-        .reply(200, ['1f8b0800000000000013ab564a4c4e4e2d2e8e2fc9cf4ecd53b252aa4c34b2d44b4bcc4ed58588e828a556146416a516c76702a58d4d2d2d7594c032f1259505a9400d4ea98945a9454ab50031448f984a000000'], [
-          'Content-Type',
-          'application/json; charset=UTF-8',
-          'Content-Encoding',
-          'gzip'
-        ]);
+      nock('https://oauth2.googleapis.com:443', { encodedQueryParams: true })
+        .post('/token')
+        .reply(200, { access_token: 'ya29.fake-token', expires_in: 3600, token_type: 'Bearer' }, ['Content-Type', 'application/json; charset=utf-8']);
 
       nock('https://storage.googleapis.com:443', { encodedQueryParams: true })
         .get('/storage/v1/b/test-bucket/o/test.txt').times(1)
@@ -316,14 +291,9 @@ describe('GoogleCloudStorageGetNode', () => {
       jwtData: JSON.stringify(jwtData),
       projectIdTemplate: '{{ projectId }}'
     });
-    nock('https://www.googleapis.com:443', { encodedQueryParams: true })
-      .post('/oauth2/v4/token')
-      .reply(200, ['1f8b0800000000000013ab564a4c4e4e2d2e8e2fc9cf4ecd53b252aa4c34b2d44b4bcc4ed58588e828a556146416a516c76702a58d4d2d2d7594c032f1259505a9400d4ea98945a9454ab50031448f984a000000'], [
-        'Content-Type',
-        'application/json; charset=UTF-8',
-        'Content-Encoding',
-        'gzip'
-      ]);
+    nock('https://oauth2.googleapis.com:443', { encodedQueryParams: true })
+      .post('/token')
+      .reply(200, { access_token: 'ya29.fake-token', expires_in: 3600, token_type: 'Bearer' }, ['Content-Type', 'application/json; charset=utf-8']);
 
     nock('https://storage.googleapis.com:443', { encodedQueryParams: true })
       .get('/storage/v1/b/test-bucket/o/test.txt').times(1)
@@ -381,14 +351,9 @@ describe('GoogleCloudStorageGetNode', () => {
 
   it('should get a download link to a file', async () => {
     tk.freeze(0);
-    nock('https://www.googleapis.com:443', { encodedQueryParams: true })
-      .post('/oauth2/v4/token')
-      .reply(200, ['1f8b0800000000000013ab564a4c4e4e2d2e8e2fc9cf4ecd53b252aa4c34b2d44b4bcc4ed58588e828a556146416a516c76702a58d4d2d2d7594c032f1259505a9400d4ea98945a9454ab50031448f984a000000'], [
-        'Content-Type',
-        'application/json; charset=UTF-8',
-        'Content-Encoding',
-        'gzip'
-      ]);
+    nock('https://oauth2.googleapis.com:443', { encodedQueryParams: true })
+      .post('/token')
+      .reply(200, { access_token: 'ya29.fake-token', expires_in: 3600, token_type: 'Bearer' }, ['Content-Type', 'application/json; charset=utf-8']);
 
     nock('https://storage.googleapis.com:443', { encodedQueryParams: true })
       .get('/storage/v1/b/test-bucket/o/test.txt')
@@ -403,14 +368,9 @@ describe('GoogleCloudStorageGetNode', () => {
   });
 
   it('should download a file with custom encoding', async () => {
-    nock('https://www.googleapis.com:443', { encodedQueryParams: true })
-      .post('/oauth2/v4/token')
-      .reply(200, ['1f8b0800000000000013ab564a4c4e4e2d2e8e2fc9cf4ecd53b252aa4c34b2d44b4bcc4ed58588e828a556146416a516c76702a58d4d2d2d7594c032f1259505a9400d4ea98945a9454ab50031448f984a000000'], [
-        'Content-Type',
-        'application/json; charset=UTF-8',
-        'Content-Encoding',
-        'gzip'
-      ]);
+    nock('https://oauth2.googleapis.com:443', { encodedQueryParams: true })
+      .post('/token')
+      .reply(200, { access_token: 'ya29.fake-token', expires_in: 3600, token_type: 'Bearer' }, ['Content-Type', 'application/json; charset=utf-8']);
 
     nock('https://storage.googleapis.com:443', { encodedQueryParams: true })
       .get('/storage/v1/b/test-bucket/o/test.txt').times(1)
@@ -470,14 +430,9 @@ describe('GoogleCloudStorageGetNode', () => {
   });
 
   it('should error when trying to read a too big file', async () => {
-    nock('https://www.googleapis.com:443', { encodedQueryParams: true })
-      .post('/oauth2/v4/token')
-      .reply(200, ['1f8b0800000000000013ab564a4c4e4e2d2e8e2fc9cf4ecd53b252aa4c34b2d44b4bcc4ed58588e828a556146416a516c76702a58d4d2d2d7594c032f1259505a9400d4ea98945a9454ab50031448f984a000000'], [
-        'Content-Type',
-        'application/json; charset=UTF-8',
-        'Content-Encoding',
-        'gzip'
-      ]);
+    nock('https://oauth2.googleapis.com:443', { encodedQueryParams: true })
+      .post('/token')
+      .reply(200, { access_token: 'ya29.fake-token', expires_in: 3600, token_type: 'Bearer' }, ['Content-Type', 'application/json; charset=utf-8']);
 
     nock('https://storage.googleapis.com:443', { encodedQueryParams: true })
       .get('/storage/v1/b/test-bucket/o/test.txt').times(1)

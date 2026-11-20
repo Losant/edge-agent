@@ -42,7 +42,9 @@ describe('GooglePublishNode', () => {
 
     const client = PubSub.prototype.topic.firstCall.thisValue;
     client.options.projectId.should.equal(fakeGoogleCredentials.project_id);
-    client.options.credentials.should.deepEqual(fakeGoogleCredentials);
+    const authClient = client.options.auth.cachedCredential;
+    authClient.email.should.equal(fakeGoogleCredentials.client_email);
+    authClient.key.should.equal(fakeGoogleCredentials.private_key);
     PubSub.prototype.topic.firstCall.args.should.deepEqual(['losantTestTopic2']);
     topic.setPublishOptions.firstCall.args.should.deepEqual([{ gaxOpts: { retry: 10 } }]);
     const [data, attributes] = topic.publish.firstCall.args;

@@ -2,8 +2,11 @@ import * as payloadHelper from 'losant-handlebars';
 import errors from 'losant-nodejs-utils/src/errors.js';
 import ljsonRender from './lib/ljson-render.js';
 import { PubSub } from '@google-cloud/pubsub';
+import { GoogleAuth } from 'google-auth-library';
 import { isNil, toString, isPlainObject } from 'omnibelt';
-import { validateAndParseAuthCredentials, validateAndGetProjectId } from './lib/google-auth.js';
+import {
+  validateAndParseAuthCredentials, validateAndGetProjectId, getJwtAuthClient, GOOGLE_AUTH_SCOPES
+} from './lib/google-auth.js';
 
 const maxRetry = 10;
 const gPubSubTopicRegExp = /^[A-Za-z0-9-_.~+%]{3,255}$/;
@@ -109,9 +112,17 @@ export default class GooglePublishNode {
       }
 
       const config = await this.renderCredentials(payload, context);
+      const authClient = getJwtAuthClient({
+        clientEmail: config.keyJson.client_email,
+        privateKey: config.keyJson.private_key
+      }, GOOGLE_AUTH_SCOPES.CLOUD_PLATFORM);
+      const auth = new GoogleAuth({
+        projectId: config.projectId,
+        authClient
+      });
       const client = new PubSub({
         projectId: config.projectId,
-        credentials: config.keyJson
+        auth
       });
 
       topic = client.topic(topic);
